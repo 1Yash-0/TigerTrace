@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────
-# Python cache / byte-compiled
+# Python bytecode & cache
 # ─────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -12,7 +12,7 @@ build/
 *.egg
 
 # ─────────────────────────────────────────────────────────
-# Environment
+# Virtual environments
 # ─────────────────────────────────────────────────────────
 .env
 .venv/
@@ -21,48 +21,32 @@ env/
 *.env
 
 # ─────────────────────────────────────────────────────────
-# Large data files — never commit raw images or weights
+# Data files (Datasets, DBs, raw dumps, generated crops)
 # ─────────────────────────────────────────────────────────
-data/atrw/
-data/raw/
-data/negatives/
-data/interim/
-data/processed/
-data/gallery/
-data/pench_wildlife.db
-data/reports/
+data/
 
 # ─────────────────────────────────────────────────────────
-# Model weights — too large for git (use git-lfs or GDrive)
+# Pretrained Large Model Weights (>100MB like MegaDetector V6)
+# (Download link provided in README.md)
 # ─────────────────────────────────────────────────────────
-models/checkpoints/
 models/pretrained/
-models/exported/
 
 # ─────────────────────────────────────────────────────────
-# Outputs / runs
+# Output folders & logs
 # ─────────────────────────────────────────────────────────
 outputs/
 runs/
+*.log
+*.tmp
+*.bak
 
 # ─────────────────────────────────────────────────────────
-# IDEs / OS
+# IDEs & System files
 # ─────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.DS_Store
 Thumbs.db
 desktop.ini
-
-# ─────────────────────────────────────────────────────────
-# Jupyter
-# ─────────────────────────────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb
-
-# ─────────────────────────────────────────────────────────
-# Logs / temp
-# ─────────────────────────────────────────────────────────
-*.log
-*.tmp
-*.bak
