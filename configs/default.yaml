@@ -1,0 +1,55 @@
+project:
+  name: "Pench Tiger Reserve Camera-Trap Intelligence System"
+  version: "1.0.0"
+  target_species: "tiger"
+  confidence_level: "calibrated"
+
+paths:
+  raw_data_dir: "data/raw"
+  atrw_dir: "data/atrw"
+  interim_dir: "data/interim"
+  processed_dir: "data/processed"
+  models_pretrained_dir: "models/pretrained"
+  models_checkpoints_dir: "models/checkpoints"
+  models_exported_dir: "models/exported"
+  db_path: "data/pench_wildlife.db"
+  reports_dir: "outputs/reports"
+  maps_dir: "outputs/maps"
+
+triage:
+  detector_model: "models/pretrained/MDV6-yolov9-c.onnx"
+  detector_input_size: 1280
+  fast_triage_size: 640
+  animal_conf_threshold: 0.20
+  person_conf_threshold: 0.20
+  vehicle_conf_threshold: 0.20
+  blank_iou_threshold: 0.45
+  auto_exclude_blank: true
+  enable_privacy_blur: true
+
+classification:
+  model_name: "mobilenetv3_large"
+  input_size: 224
+  crop_padding: 0.15
+  tiger_conf_threshold: 0.50
+  weights_path: "models/checkpoints/classifier/best_tiger_classifier.pth"
+  onnx_path: "models/exported/classifier/tiger_classifier.onnx"
+
+reid:
+  backbone: "resnet18"
+  embedding_dim: 256
+  input_height: 256
+  input_width: 128
+  weights_path: "models/checkpoints/reid/best_atrw_reid.pth"
+  onnx_path: "models/exported/reid/tiger_reid.onnx"
+  auto_match_distance_threshold: 0.35
+  ambiguity_margin_threshold: 0.08
+  min_quality_score_for_automatch: 0.60
+  top_k_candidates: 5
+
+analytics:
+  event_time_window_seconds: 60
+  centroid_shift_core_threshold_km: 15.0
+  centroid_shift_buffer_threshold_km: 5.0
+  prolonged_absence_days_threshold: 45
+  min_observations_for_mcp: 3
