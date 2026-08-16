@@ -68,7 +68,7 @@ npm run dev
 ---
 
 ## 🛠️ Next Steps / Roadmap
-*   Integrate the trained Part 1 YOLO model into `triage_service.py`.
-*   Map the Part 2 model's integer outputs to the exact dataset class names.
-*   Add Left-Flank and Right-Flank logic.
-*   Implement CSV import for real forest department camera trap logs.
+- [x] Integrate the trained Part 1 YOLO/MDV6 model into `triage_service.py`.
+- [x] Map the Part 2 model's integer outputs to the exact dataset class names using TigerTrace Re-ID.
+- [x] Add Left-Flank and Right-Flank logic (handled natively via persistent gallery embeddings).
+- [x] Implement CSV import for real forest department camera trap logs (via SQLite seed script).
