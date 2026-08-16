@@ -128,8 +128,10 @@ def get_tiger(tiger_id: str, db: Session = Depends(get_db)):
     return {
         "tiger_id": t.tiger_id, "name": t.name, "sex": t.sex,
         "total_captures": t.total_captures,
-        "captures": [{"station": c.station_id, "timestamp": c.timestamp, 
-                      "zone": c.zone, "image": c.image_path} for c in caps]
+        "captures": [{"station_id": c.station_id, "timestamp": c.timestamp, 
+                      "zone": c.zone, "image": c.image_path,
+                      "lat": c.latitude, "lon": c.longitude,
+                      "confidence": c.confidence} for c in caps]
     }
 
 @app.get("/api/review-queue")
