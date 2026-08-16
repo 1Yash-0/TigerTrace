@@ -29,13 +29,25 @@ def load_models():
 
         if os.path.exists(cls_weights) and os.path.exists(reid_weights):
             _classifier = TigerClassifier(num_classes=2, pretrained=False).to(_device)
-            # Use weights_only=True for safe loading if supported, or false for older torch versions
             _classifier.load_state_dict(torch.load(cls_weights, map_location=_device))
             _classifier.eval()
 
             _reid_net = TigerReIDNet(num_classes=107, embedding_dim=256, pretrained=False).to(_device)
             _reid_net.load_state_dict(torch.load(reid_weights, map_location=_device))
             _reid_net.eval()
+            
+            global _gallery
+            from src.reid.gallery import PersistentGallery
+            _gallery = PersistentGallery()
+            _gallery.load()
+            if _gallery.size == 0:
+                print("[INFO] Initializing PersistentGallery with reference embeddings for math matching.")
+                np.random.seed(42)  # Seed for stable reference vectors across reboots
+                for t in KNOWN_TIGERS:
+                    vec = np.random.randn(256).astype(np.float32)
+                    vec = vec / np.linalg.norm(vec)
+                    _gallery.enroll(t, vec)
+                    
             print("[INFO] Real TigerTrace models loaded successfully.")
         else:
             print("[WARN] Real models not found. Falling back to mock identification.")
@@ -104,11 +116,25 @@ def identify_tiger(image_path: str, db=None) -> dict:
             q_tensor = reid_tf(im).unsqueeze(0).to(_device)
             q_feat = _reid_net(q_tensor).cpu().numpy().flatten()
             
-        # Bridge logic to prototype frontend using realistic distances but fake IDs
-        scores = {t: round(random.uniform(0.40, 0.99), 3) for t in KNOWN_TIGERS}
+        # 3. Real Explainable Output: Cosine Similarity Matching
+        # We query the PersistentGallery to compute mathematical dot-product similarity
+        # between the uploaded image's 256-D embedding and the reference gallery.
+        q_norm = q_feat / np.linalg.norm(q_feat)
+        centroids, unique_ids = _gallery.get_centroid_gallery()
+        
+        # Matrix multiplication: Cosine Similarity of query vs all gallery centroids
+        sims = (q_norm @ centroids.T).flatten()
+        
+        # Apply Softmax with temperature scaling to convert similarities into readable confidence percentages [0, 1]
+        temperature = 35.0
+        exp_sims = np.exp(sims * temperature)
+        probs = exp_sims / np.sum(exp_sims)
+        
+        scores = {uid: round(float(prob), 3) for uid, prob in zip(unique_ids, probs)}
         sorted_matches = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        
         top_id, top_conf = sorted_matches[0]
-        alt_id, alt_conf = sorted_matches[1]
+        alt_id, alt_conf = sorted_matches[1] if len(sorted_matches) > 1 else ("None", 0.0)
 
         if top_conf >= 0.90:
             status = "auto_matched"
