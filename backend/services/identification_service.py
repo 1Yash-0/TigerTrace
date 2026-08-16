@@ -41,12 +41,30 @@ def load_models():
             _gallery = PersistentGallery()
             _gallery.load()
             if _gallery.size == 0:
-                print("[INFO] Initializing PersistentGallery with reference embeddings for math matching.")
-                np.random.seed(42)  # Seed for stable reference vectors across reboots
-                for t in KNOWN_TIGERS:
-                    vec = np.random.randn(256).astype(np.float32)
-                    vec = vec / np.linalg.norm(vec)
-                    _gallery.enroll(t, vec)
+                print("[INFO] Initializing PersistentGallery with reference embeddings from DB for math matching.")
+                try:
+                    from database import SessionLocal, Tiger
+                    db_session = SessionLocal()
+                    tigers_in_db = db_session.query(Tiger).all()
+                    if tigers_in_db:
+                        for t in tigers_in_db:
+                            if t.embedding_json:
+                                emb = json.loads(t.embedding_json)
+                                vec = np.array(emb, dtype=np.float32)
+                                norm = np.linalg.norm(vec)
+                                if norm > 1e-8:
+                                    vec = vec / norm
+                                _gallery.enroll(t.tiger_id, vec)
+                    db_session.close()
+                except Exception as e_db:
+                    print(f"[WARN] Unable to load DB tiger embeddings into gallery: {e_db}")
+
+                if _gallery.size == 0:
+                    np.random.seed(42)  # Seed for stable reference vectors across reboots
+                    for t in KNOWN_TIGERS:
+                        vec = np.random.randn(256).astype(np.float32)
+                        vec = vec / np.linalg.norm(vec)
+                        _gallery.enroll(t, vec)
                     
             print("[INFO] Real TigerTrace models loaded successfully.")
         else:
@@ -143,6 +161,27 @@ def identify_tiger(image_path: str, db=None) -> dict:
         else:
             status = "new_individual"
 
+        if status == "ambiguous" and db is not None:
+            try:
+                from database import ReviewQueue
+                from datetime import datetime
+                existing = db.query(ReviewQueue).filter(ReviewQueue.image_path == image_path, ReviewQueue.status == "pending").first()
+                if not existing:
+                    rq_item = ReviewQueue(
+                        image_path=image_path,
+                        station_id="ST-ONLINE",
+                        timestamp=datetime.utcnow(),
+                        top_match_id=top_id,
+                        top_match_confidence=top_conf,
+                        alt_match_id=alt_id,
+                        alt_match_confidence=alt_conf,
+                        status="pending"
+                    )
+                    db.add(rq_item)
+                    db.commit()
+            except Exception as rq_err:
+                print(f"[WARN] Failed to insert into review_queue: {rq_err}")
+
         return {
             "status":     status,
             "top_match":  {"tiger_id": top_id, "confidence": top_conf},
@@ -152,3 +191,4 @@ def identify_tiger(image_path: str, db=None) -> dict:
     except Exception as e:
         print(f"[ERROR] Inference failed: {e}")
         return mock_identify(image_path)
+

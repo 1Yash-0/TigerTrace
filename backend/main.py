@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from database import Base, engine, get_db, seed_database, \
-                     Tiger, Capture, TriageRun, ReviewQueue, Alert
+             Tiger, Capture, TriageRun, ReviewQueue, Alert
 from services.triage_service        import run_triage
 from services.identification_service import identify_tiger
 from services.geospatial_service    import get_tiger_home_ranges, get_territory_overlaps
@@ -100,8 +100,28 @@ async def identify_image(file: UploadFile = File(...), db: Session = Depends(get
         f.write(contents)
     
     result = identify_tiger(temp_path, db)
-    # Don't delete temp_path here if it's meant to be kept, 
-    # but for prototype we just return the result.
+    
+    # Increment total_captures for identified tiger
+    if result.get("status") == "auto_matched":
+        top_id = result.get("top_match", {}).get("tiger_id")
+        conf = result.get("top_match", {}).get("confidence", 0.95)
+        tiger = db.query(Tiger).filter(Tiger.tiger_id == top_id).first()
+        if tiger:
+            new_cap = Capture(
+                tiger_id=top_id,
+                image_path=temp_path,
+                station_id="ST-ONLINE",
+                latitude=21.78,
+                longitude=79.44,
+                timestamp=datetime.utcnow(),
+                confidence=conf,
+                zone="core",
+                flank_side="Unknown"
+            )
+            db.add(new_cap)
+            tiger.total_captures = db.query(Capture).filter(Capture.tiger_id == top_id).count() + 1
+            db.commit()
+
     return result
 
 @app.get("/api/tigers")
@@ -146,19 +166,89 @@ def get_review_queue(db: Session = Depends(get_db)):
 @app.post("/api/review-queue/{item_id}/resolve")
 def resolve_review(item_id: int, action: str, tiger_id: str = None, db: Session = Depends(get_db)):
     item = db.query(ReviewQueue).filter(ReviewQueue.id == item_id).first()
-    if not item: raise HTTPException(status_code=404)
+    if not item:
+        raise HTTPException(status_code=404, detail="Review item not found")
     
-    if action == "confirm":
+    from database import extract_real_resnet18_embedding
+
+    if action in ("confirm", "confirmed"):
         item.status = "confirmed"
-        # would add capture to db here
-    elif action == "new":
+        target_id = tiger_id or item.top_match_id
+        tiger = db.query(Tiger).filter(Tiger.tiger_id == target_id).first()
+        if tiger:
+            new_cap = Capture(
+                tiger_id=target_id,
+                image_path=item.image_path,
+                station_id=item.station_id or "ST-ONLINE",
+                latitude=21.78,
+                longitude=79.44,
+                timestamp=item.timestamp or datetime.utcnow(),
+                confidence=item.top_match_confidence or 0.90,
+                zone="core",
+                flank_side="Unknown"
+            )
+            db.add(new_cap)
+            tiger.total_captures = db.query(Capture).filter(Capture.tiger_id == target_id).count() + 1
+            
+            if os.path.exists(item.image_path):
+                emb_256d = extract_real_resnet18_embedding(image_path=item.image_path)
+                if emb_256d:
+                    tiger.embedding_json = json.dumps(emb_256d)
+
+    elif action in ("new", "new_individual"):
         item.status = "new_individual"
-        # would enroll new tiger here
+        new_id = tiger_id
+        if not new_id:
+            count = db.query(Tiger).count()
+            new_id = f"PTR-T{count + 1:02d}"
+        
+        emb_256d = None
+        if os.path.exists(item.image_path):
+            emb_256d = extract_real_resnet18_embedding(image_path=item.image_path)
+        if not emb_256d:
+            emb_256d = extract_real_resnet18_embedding(seed_index=db.query(Tiger).count() + 1)
+            
+        new_tiger = Tiger(
+            tiger_id=new_id,
+            name=f"Tiger {new_id.replace('PTR-T', '')}",
+            sex="Unknown",
+            enrolled_at=datetime.utcnow(),
+            total_captures=1,
+            embedding_json=json.dumps(emb_256d)
+        )
+        db.add(new_tiger)
+        
+        new_cap = Capture(
+            tiger_id=new_id,
+            image_path=item.image_path,
+            station_id=item.station_id or "ST-ONLINE",
+            latitude=21.78,
+            longitude=79.44,
+            timestamp=item.timestamp or datetime.utcnow(),
+            confidence=1.0,
+            zone="core",
+            flank_side="Unknown"
+        )
+        db.add(new_cap)
+
+        try:
+            from services.identification_service import _gallery
+            import numpy as np
+            if _gallery is not None and emb_256d:
+                vec = np.array(emb_256d, dtype=np.float32)
+                norm = np.linalg.norm(vec)
+                if norm > 1e-8:
+                    vec = vec / norm
+                _gallery.enroll(new_id, vec)
+                _gallery.save()
+        except Exception as g_err:
+            print(f"[WARN] Unable to update gallery: {g_err}")
+
     else:
         raise HTTPException(status_code=400, detail="Invalid action")
     
     db.commit()
-    return {"status": "success"}
+    return {"status": "success", "review_status": item.status}
 
 # ══════════════════════════════════════════════════════════════════════════════
 # PART 3 — GEOSPATIAL
@@ -232,7 +322,7 @@ def export_geospatial_csv(db: Session = Depends(get_db)):
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Tiger ID", "Name", "Sex", "Area (sq km)", "Centroid Lat", "Centroid Lon",
-                     "Total Captures", "Stations Visited Count", "Last Seen"])
+                     "Total Captures", "Stations Visited", "Last Seen"])
     for r in ranges:
         writer.writerow([
             r["tiger_id"], r["name"], r["sex"], r["area_sq_km"],
@@ -248,3 +338,15 @@ def export_geospatial_csv(db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=pench_homeranges_report.csv"}
     )
+
+@app.post("/api/upload-video")
+async def upload_hero_video(file: UploadFile = File(...)):
+    """Upload a new hero/wildlife video from laptop."""
+    os.makedirs("../frontend/public", exist_ok=True)
+    destination = Path("../frontend/public/hero.mp4")
+    contents = await file.read()
+    with open(destination, "wb") as f:
+        f.write(contents)
+    return {"status": "success", "filename": file.filename, "size_mb": round(len(contents) / (1024 * 1024), 2)}
+
+
