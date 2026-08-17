@@ -23,10 +23,23 @@ app = FastAPI(title="TigerTrace — Camera Trap Intelligence API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def root_status():
+    return {
+        "status": "online",
+        "service": "TigerTrace — Camera Trap Intelligence API",
+        "docs": "/docs",
+        "endpoints": ["/api/summary", "/api/tigers", "/api/geospatial/home-ranges", "/api/alerts"]
+    }
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
 os.makedirs("data/images", exist_ok=True)
 os.makedirs("data/quarantined_blanks", exist_ok=True)
