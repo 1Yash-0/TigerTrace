@@ -206,21 +206,21 @@ export default function PatrolPriorityPage() {
               className={filter === "CRITICAL" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              Critical ({counts.critical})
+              🔴 Critical ({counts.critical})
             </button>
             <button
               onClick={() => setFilter("HIGH")}
               className={filter === "HIGH" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              High ({counts.high})
+              🟠 High ({counts.high})
             </button>
             <button
               onClick={() => setFilter("MODERATE")}
               className={filter === "MODERATE" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              Moderate ({counts.moderate})
+              🟡 Moderate ({counts.moderate})
             </button>
             <button
               onClick={() => setFilter("village")}
@@ -447,7 +447,7 @@ export default function PatrolPriorityPage() {
                             }}
                           >
                             <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isCritical ? "var(--lewa-cream)" : selStyle.ink }} />
-                            {selectedStation.priority_level} PRIORITY
+                            {selectedStation.badge_icon} {selectedStation.priority_level} PRIORITY
                           </span>
                         </div>
 
@@ -719,7 +719,7 @@ export default function PatrolPriorityPage() {
                   </div>
 
                   <span style={{ fontSize: "12px", fontWeight: 700, color: levelStyle(item.priority_level).ink, fontVariantNumeric: "tabular-nums" }}>
-                    {item.priority_score}/100
+                    {item.badge_icon} {item.priority_score}/100
                   </span>
                 </div>
 
