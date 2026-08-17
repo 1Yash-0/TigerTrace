@@ -1,0 +1,790 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   PENCH TIGER RESERVE — ROYAL BENGAL TIGER CONSERVATION PLATFORM
+   Cinematic Editorial Luxury Tiger Safari Design System
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Royal Bengal Tiger & Pench Teak Forest Palette */
+  --lewa-cream: #F8F5EF;
+  --lewa-ivory: #F2EDE4;
+  --lewa-paper: #EAE3D7;
+  --lewa-charcoal: #15110D;
+  --lewa-body: #2C241C;
+  --lewa-muted: #736658;
+  --lewa-light: #9E8F7F;
+  
+  /* Tiger Coat & Stripe Hues */
+  --lewa-terracotta: #C85220;   /* Vibrant Bengal Tiger Flame */
+  --lewa-rust: #AA3D12;         /* Deep Stripe Ochre */
+  --lewa-amber: #E28816;        /* Radiance Coat Amber */
+  --lewa-gold: #EAAB34;         /* Sunlit Tiger Gold */
+
+  /* Pench Teak & Sal Forest Canopy Accents */
+  --lewa-forest: #1A3B2B;       /* Deep Forest Teak */
+  --lewa-forest-light: #2A5A42; /* Sunlit Canopy Green */
+  
+  --lewa-border: rgba(21, 17, 13, 0.12);
+  --lewa-border-subtle: rgba(21, 17, 13, 0.06);
+
+  /* Fonts */
+  --font-serif: 'Playfair Display', 'Georgia', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--lewa-cream);
+  color: var(--lewa-charcoal);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(184, 71, 40, 0.2);
+  color: var(--lewa-charcoal);
+}
+
+/* ─── Typography ────────────────────────────────────────────────── */
+
+.serif { font-family: var(--font-serif); }
+.sans { font-family: var(--font-sans); }
+
+.lewa-title-hero {
+  font-family: var(--font-serif);
+  font-size: clamp(48px, 7vw, 100px);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.lewa-title-section {
+  font-family: var(--font-serif);
+  font-size: clamp(38px, 5vw, 68px);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.lewa-title-md {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.5vw, 48px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.lewa-title-sm {
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2.5vw, 32px);
+  font-weight: 400;
+}
+
+.font-italic {
+  font-style: italic;
+}
+
+/* Brush underline styling like Lewa House */
+.brush-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.brush-underline::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -6px;
+  height: 4px;
+  background: var(--lewa-terracotta);
+  border-radius: 2px;
+  opacity: 0.85;
+}
+
+/* Outlined serif text like "at Lewa" */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--lewa-charcoal);
+}
+
+/* ─── Painted Brush Buttons ─────────────────────────────────────── */
+
+.btn-brush {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 22px;
+  background: var(--lewa-terracotta);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(184, 71, 40, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-brush:hover {
+  background: var(--lewa-rust);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 18px rgba(184, 71, 40, 0.45);
+}
+
+.btn-pill-light {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 40px;
+  border: 1px solid var(--lewa-border);
+  background: transparent;
+  color: var(--lewa-charcoal);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-pill-light:hover {
+  border-color: var(--lewa-terracotta);
+  color: var(--lewa-terracotta);
+  background: rgba(184, 71, 40, 0.04);
+}
+
+/* ─── Navigation ────────────────────────────────────────────────── */
+
+.lewa-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease, border-color 0.4s ease;
+}
+
+.lewa-nav.scrolled {
+  background: rgba(239, 234, 225, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--lewa-border-subtle);
+  height: 76px;
+}
+
+.lewa-nav-left, .lewa-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.lewa-nav-logo {
+  text-align: center;
+  text-decoration: none;
+  color: var(--lewa-charcoal);
+}
+
+.lewa-nav-logo h1 {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+
+.lewa-nav-logo p {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--lewa-muted);
+  margin-top: 4px;
+}
+
+.lewa-nav-link {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--lewa-charcoal);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.lewa-nav-link.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--lewa-terracotta);
+}
+
+.lewa-nav-link:hover {
+  color: var(--lewa-terracotta);
+}
+
+/* Transparent Light Navigation (on top of dark hero video) */
+.lewa-nav.transparent-light {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 65%, transparent 100%);
+}
+
+.lewa-nav.transparent-light .lewa-nav-logo {
+  color: #ffffff;
+}
+
+.lewa-nav.transparent-light .lewa-nav-logo h1 {
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.lewa-nav.transparent-light .lewa-nav-logo p {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
+
+.lewa-nav.transparent-light .lewa-nav-link {
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+  font-weight: 700;
+}
+
+.lewa-nav.transparent-light .lewa-nav-link.active::after {
+  background: #ffffff;
+}
+
+.lewa-nav.transparent-light .lewa-nav-link:hover {
+  color: var(--lewa-amber);
+}
+
+.lewa-nav.transparent-light .btn-pill-light {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+}
+
+/* ─── Hero Section ──────────────────────────────────────────────── */
+
+.lewa-hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--lewa-charcoal);
+}
+
+.lewa-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+.lewa-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(28, 23, 18, 0.3) 0%, rgba(28, 23, 18, 0.75) 100%);
+}
+
+.lewa-hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  color: #fff;
+  max-width: 900px;
+  padding: 0 20px;
+}
+
+.lewa-hero-stamp-wrap {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.lewa-hero-cloud {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 460px;
+  opacity: 0.85;
+  pointer-events: none;
+  filter: blur(8px);
+}
+
+/* ─── Split Screen Sections ─────────────────────────────────────── */
+
+.lewa-split-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 90vh;
+  position: relative;
+}
+
+.lewa-split-left, .lewa-split-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 7vw;
+  position: relative;
+}
+
+.lewa-split-content {
+  max-width: 520px;
+}
+
+/* Torn paper deckle edges */
+.deckle-frame {
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(28, 23, 18, 0.12);
+  background: #fff;
+  padding: 12px;
+}
+
+.deckle-frame img, .deckle-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 2px;
+}
+
+/* ─── Floating Rotating Stamp ───────────────────────────────────── */
+
+.lewa-stamp {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lewa-terracotta);
+}
+
+.lewa-stamp svg.rotating {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: rotateStamp 22s linear infinite;
+}
+
+@keyframes rotateStamp {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.lewa-stamp-center {
+  position: relative;
+  z-index: 2;
+  font-size: 22px;
+}
+
+/* Circular Scroll Indicator */
+.lewa-circle-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 1px solid var(--lewa-terracotta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lewa-terracotta);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lewa-circle-btn:hover {
+  background: var(--lewa-terracotta);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ─── Circular Pride / Species Profile Cards ────────────────────── */
+
+.pride-chips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 32px;
+}
+
+.pride-chip-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.pride-chip-avatar {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(28, 23, 18, 0.12);
+  border: 3px solid #fff;
+}
+
+.pride-chip-avatar img, .pride-chip-avatar .chip-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pride-chip-plus {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lewa-terracotta);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(184, 71, 40, 0.4);
+}
+
+.pride-chip-info h4 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 6px;
+  color: var(--lewa-charcoal);
+}
+
+.pride-chip-stats {
+  font-size: 12px;
+  color: var(--lewa-body);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pride-chip-stats span {
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--lewa-muted);
+  font-weight: 600;
+}
+
+/* ─── Social & Sound Controls ───────────────────────────────────── */
+
+.lewa-socials {
+  position: fixed;
+  bottom: 28px;
+  left: 5vw;
+  z-index: 50;
+  display: flex;
+  gap: 16px;
+  color: var(--lewa-charcoal);
+  font-size: 14px;
+}
+
+.lewa-sound-toggle {
+  position: fixed;
+  bottom: 28px;
+  right: 5vw;
+  z-index: 50;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--lewa-border);
+  background: rgba(239, 234, 225, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lewa-charcoal);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lewa-sound-toggle:hover {
+  background: var(--lewa-terracotta);
+  color: #fff;
+  border-color: var(--lewa-terracotta);
+}
+
+/* ─── Upload Dropzone (Lewa Style) ──────────────────────────────── */
+
+.lewa-dropzone {
+  border: 2px dashed var(--lewa-border);
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 24px;
+}
+
+.lewa-dropzone:hover, .lewa-dropzone.dragging {
+  border-color: var(--lewa-terracotta);
+  background: rgba(184, 71, 40, 0.03);
+}
+
+/* ─── Responsive Breakpoints ────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .lewa-split-section {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .lewa-split-left, .lewa-split-right {
+    padding: 60px 24px;
+  }
+
+  .lewa-nav-left .lewa-nav-link, .lewa-nav-right .lewa-nav-link {
+    display: none;
+  }
+}
+
+/* ─── Horizontal Full-Viewport Slideshow ─────────────────────────── */
+
+.slideshow-viewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--lewa-cream);
+}
+
+.slideshow-track {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 400vw; /* 4 panels * 100vw */
+  will-change: transform;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.slideshow-panel {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* On Desktop, make split sections fill 100vh inside the panel */
+@media (min-width: 769px) {
+  .slideshow-panel .lewa-split-section {
+    height: 100vh;
+    max-height: 100vh;
+    width: 100vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+  
+  .slideshow-panel .lewa-split-left,
+  .slideshow-panel .lewa-split-right {
+    padding: 95px 5vw 35px 5vw;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+}
+
+/* Mobile fallback: normal vertical scroll */
+@media (max-width: 768px) {
+  .slideshow-viewport {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .slideshow-track {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .slideshow-panel {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+  }
+
+  .slideshow-panel .lewa-split-section {
+    min-height: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .slideshow-nav-dots,
+  .slideshow-arrow {
+    display: none !important;
+  }
+}
+
+/* Nav Dots / Panel Controls */
+.slideshow-nav-dots {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(28, 23, 18, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 6px 14px;
+  border-radius: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.4s ease;
+}
+
+.slideshow-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.slideshow-dot:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.slideshow-dot.active {
+  color: #fff;
+  background: var(--lewa-terracotta);
+}
+
+.slideshow-dot-number {
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Floating Navigation Arrows */
+.slideshow-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 90;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(28, 23, 18, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.slideshow-arrow:hover {
+  background: var(--lewa-terracotta);
+  border-color: var(--lewa-terracotta);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slideshow-arrow-left {
+  left: 2vw;
+}
+
+.slideshow-arrow-right {
+  right: 2vw;
+}
+
+/* Scroll indicator bounce */
+@keyframes bounceVertical {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.scroll-indicator-bounce {
+  animation: bounceVertical 2s ease-in-out infinite;
+}
+

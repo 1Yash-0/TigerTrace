@@ -1,0 +1,313 @@
+{
+  "generated_at": "2026-08-17T22:01:11.724572",
+  "hardware_environment": {
+    "os": "Windows 10",
+    "cpu_processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
+    "physical_cores": 16,
+    "logical_cores": 22,
+    "ram_total_gb": 15.52,
+    "python_version": "3.11.9",
+    "torch_version": "2.13.0+cu126",
+    "onnxruntime_version": "1.28.0"
+  },
+  "classifier_evaluation": {
+    "total_tested": 675,
+    "tiger_samples": 300,
+    "non_tiger_samples": 375,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "tiger_precision": 1.0,
+    "tiger_recall": 1.0,
+    "tiger_f1": 1.0,
+    "not_tiger_precision": 1.0,
+    "not_tiger_recall": 1.0,
+    "not_tiger_f1": 1.0,
+    "confusion_matrix": [
+      [
+        300,
+        0
+      ],
+      [
+        0,
+        375
+      ]
+    ],
+    "per_species_breakdown": {
+      "chital": {
+        "total": 75,
+        "correct": 75,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0001
+      },
+      "gaur": {
+        "total": 25,
+        "correct": 25,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0
+      },
+      "leopard": {
+        "total": 100,
+        "correct": 100,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0001
+      },
+      "sambar": {
+        "total": 75,
+        "correct": 75,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0001
+      },
+      "sloth_bear": {
+        "total": 50,
+        "correct": 50,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0003
+      },
+      "tiger": {
+        "total": 300,
+        "correct": 300,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 1.0
+      },
+      "wild_boar": {
+        "total": 50,
+        "correct": 50,
+        "accuracy": 1.0,
+        "mean_tiger_prob": 0.0
+      }
+    },
+    "threshold_sensitivity": [
+      {
+        "threshold": 0.1,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.15,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.2,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.25,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.3,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.35,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.4,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.45,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.5,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.55,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.6,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.65,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.7,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.75,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.8,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.85,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      },
+      {
+        "threshold": 0.9,
+        "tiger_recall": 1.0,
+        "tiger_precision": 1.0,
+        "other_recall": 1.0,
+        "accuracy": 1.0
+      }
+    ],
+    "torch_onnx_max_parity_diff": 1.1920928955078125e-07,
+    "torch_onnx_mean_parity_diff": 2.867747670882729e-10
+  },
+  "reid_evaluation": {
+    "num_identities": 107,
+    "gallery_size": 923,
+    "query_size": 964,
+    "rank_1": 0.9917,
+    "rank_5": 0.9959,
+    "rank_10": 0.9979,
+    "rank_20": 0.9979,
+    "mAP": 0.9913,
+    "intra_distance_mean": 0.1771,
+    "intra_distance_std": 0.0913,
+    "inter_distance_mean": 1.0078,
+    "inter_distance_std": 0.0908,
+    "separation_margin": 0.8307,
+    "threshold_calibration": [
+      {
+        "distance_threshold": 0.2,
+        "false_non_match_rate": 30.9,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.25,
+        "false_non_match_rate": 15.17,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.3,
+        "false_non_match_rate": 7.82,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.35,
+        "false_non_match_rate": 4.38,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.4,
+        "false_non_match_rate": 2.44,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.45,
+        "false_non_match_rate": 1.43,
+        "false_match_rate": 0.01
+      },
+      {
+        "distance_threshold": 0.5,
+        "false_non_match_rate": 0.84,
+        "false_match_rate": 0.02
+      }
+    ],
+    "torch_onnx_cosine_parity": 1.0
+  },
+  "runtime_micro_benchmarks": {
+    "mdv6_yolov9c_onnx_cpu": {
+      "input_resolution": "640x640",
+      "mean_ms": 233.39,
+      "std_ms": 9.09,
+      "p50_ms": 229.96,
+      "p95_ms": 253.73,
+      "p99_ms": 262.4,
+      "fps": 4.28
+    },
+    "classifier_mobilenetv3_torch_cpu": {
+      "mean_ms": 14.1,
+      "std_ms": 1.82,
+      "p50_ms": 13.53,
+      "p95_ms": 17.96,
+      "fps": 70.94
+    },
+    "classifier_mobilenetv3_onnx_cpu": {
+      "mean_ms": 3.94,
+      "std_ms": 0.97,
+      "p50_ms": 3.57,
+      "p95_ms": 5.57,
+      "fps": 253.85
+    },
+    "reid_resnet18_torch_cpu": {
+      "mean_ms": 11.86,
+      "std_ms": 0.87,
+      "p50_ms": 11.67,
+      "p95_ms": 13.29,
+      "fps": 84.3
+    },
+    "reid_resnet18_onnx_cpu": {
+      "mean_ms": 6.14,
+      "std_ms": 6.82,
+      "p50_ms": 4.29,
+      "p95_ms": 9.83,
+      "fps": 162.93
+    },
+    "centroid_gallery_search_cpu": {
+      "active_identities": 107,
+      "active_embeddings": 535,
+      "mean_ms": 5.158,
+      "p95_ms": 6.951,
+      "throughput_queries_per_sec": 193.9
+    }
+  },
+  "pipeline_cpu_benchmark": {
+    "test_frames": 50,
+    "total_seconds": 96.31,
+    "ms_per_frame": 1926.2,
+    "fps": 0.52,
+    "projections": {
+      "100_images_minutes": 3.2,
+      "1000_images_minutes": 32.1,
+      "10000_images_hours": 5.35
+    }
+  }
+}
