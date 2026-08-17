@@ -5,6 +5,7 @@ import Link from "next/link";
 import LewaNav from "@/components/LewaNav";
 import { getSummary, listTigers } from "@/lib/api";
 import { setNavigatedFromHome } from "@/lib/navigationTracker";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   Volume2,
   VolumeX,
@@ -63,7 +64,7 @@ const TIGER_DATA: Record<
     status: "Active Patrol",
     role: "Territorial Male",
     zone: "Core / Buffer",
-    img: "https://images.unsplash.com/photo-1508873696983-2df57046475a?auto=format&fit=crop&w=600&q=80",
+    img: "https://imgs.search.brave.com/JZJnYWNEinXz1vHZ2wDXwxX0CN6H-3wmJUuZxecAdAM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTMv/NzQwLzEzNi9zbWFs/bC9kZXBpY3RzLWEt/bWFqZXN0aWMtdGln/ZXItcnVubmluZy1z/d2lmdGx5LXRocm91/Z2gtYS1sdXNoLWxl/YWYtY292ZXJlZC1m/b3Jlc3QtZHVyaW5n/LWF1dHVtbi1waG90/by5qcGc",
   },
   "PTR-T04": {
     name: "Sundari",
@@ -99,6 +100,7 @@ const PANEL_LABELS = [
 ];
 
 export default function HomePage() {
+  const { t, language } = useLanguage();
   const [isMuted, setIsMuted] = useState(true);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [tigers, setTigers] = useState<TigerProfile[]>([]);
@@ -284,48 +286,9 @@ export default function HomePage() {
 
             <div className="lewa-hero-content">
               <h1 className="lewa-title-hero">
-                Their land, <br />
-                <span className="font-italic">your adventure.</span>
+                {t.hero_title_1} <br />
+                <span className="font-italic">{t.hero_title_2}</span>
               </h1>
-            </div>
-
-            {/* Watch Film Button (Bottom Left) */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: "36px",
-                left: "5vw",
-                zIndex: 10,
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "var(--lewa-terracotta)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#fff",
-                }}
-              >
-                <Play size={14} fill="#fff" />
-              </div>
-              <span
-                style={{
-                  color: "#fff",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "2px",
-                  textTransform: "uppercase",
-                }}
-              >
-                WATCH THE FILM
-              </span>
             </div>
 
             {/* Center Scroll to Explore Indicator (Bottom Center) */}
@@ -359,7 +322,7 @@ export default function HomePage() {
                   paddingBottom: "2px",
                 }}
               >
-                SCROLL TO EXPLORE ↓
+                {t.hero_scroll_explore}
               </span>
             </button>
           </section>
@@ -375,9 +338,9 @@ export default function HomePage() {
             <div className="lewa-split-left">
               <div className="lewa-split-content">
                 <h2 className="lewa-title-section" style={{ marginBottom: "20px" }}>
-                  Wildlife <br />
-                  <span className="font-italic">at </span>
-                  <span className="text-outline brush-underline">Pench Reserve</span>
+                  {t.habitat_title_1} <br />
+                  <span className="font-italic">{language === "en" ? "at " : ""}</span>
+                  <span className="text-outline brush-underline">{t.habitat_title_2}</span>
                 </h2>
 
                 <blockquote
@@ -390,9 +353,7 @@ export default function HomePage() {
                     fontStyle: "italic",
                   }}
                 >
-                  &ldquo;Always leave space for the tiger&rdquo; is our founding
-                  mantra. That philosophy guides the Pench Tiger Reserve
-                  intelligence platform.
+                  {t.habitat_quote}
                 </blockquote>
 
                 <p
@@ -403,10 +364,7 @@ export default function HomePage() {
                     marginBottom: "24px",
                   }}
                 >
-                  We are a dedicated haven for the Royal Bengal Tiger (<em>Panthera tigris</em>).
-                  Powered by computer vision and deep stripe flank biometric embeddings,
-                  we track, identify, and monitor individual tigers non-invasively
-                  across dense teak and bamboo canopies.
+                  {t.habitat_desc}
                 </p>
 
                 <Link
@@ -414,7 +372,7 @@ export default function HomePage() {
                   className="btn-brush"
                   style={{ width: "fit-content" }}
                 >
-                  START IDENTIFYING TIGERS →
+                  {t.habitat_cta}
                 </Link>
               </div>
             </div>
@@ -521,10 +479,10 @@ export default function HomePage() {
 
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   <Link href="/map" className="btn-pill-light" style={{ padding: "8px 16px", fontSize: "11px" }}>
-                    EXPLORE ON MAP →
+                    {t.corridors_explore_map_cta}
                   </Link>
                   <Link href="/patrol" className="btn-brush" style={{ padding: "8px 16px", fontSize: "11px" }}>
-                    PATROL PRIORITIES →
+                    {t.corridors_patrol_cta}
                   </Link>
                 </div>
               </div>
@@ -901,14 +859,6 @@ export default function HomePage() {
           <ChevronRight size={22} />
         </button>
       )}
-
-      {/* Bottom Left Social Icons */}
-      <div className="lewa-socials">
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>FB</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>IG</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>X</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>YT</span>
-      </div>
 
       {/* Bottom Right Audio Toggle */}
       <button

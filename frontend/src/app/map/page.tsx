@@ -225,7 +225,7 @@ export default function MapPage() {
                       cursor: "pointer",
                     }}
                   >
-                    {pf === "all" ? "All" : pf === "CRITICAL" ? "🔴 Critical" : pf === "HIGH" ? "🟠 High" : "⚠️ Village"}
+                    {pf === "all" ? "All" : pf === "CRITICAL" ? "Critical" : pf === "HIGH" ? "High" : "Village Interface"}
                   </button>
                 ))}
               </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import LewaNav from "@/components/LewaNav";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   sendChatMessage,
   getChatHistory,
@@ -41,7 +42,7 @@ interface MessageItem {
 
 const QUICK_PROMPTS = [
   {
-    category: "🐅 Tigers",
+    category: "Tigers & Profiles",
     queries: [
       "Show all registered tigers",
       "Tell me about Choti Tara (PTR-T01)",
@@ -50,7 +51,7 @@ const QUICK_PROMPTS = [
     ],
   },
   {
-    category: "🗺️ Territory & Movement",
+    category: "Territory & Movement",
     queries: [
       "What is T-01's home range?",
       "Which tigers have overlapping territories?",
@@ -59,7 +60,7 @@ const QUICK_PROMPTS = [
     ],
   },
   {
-    category: "⚠️ Safety & Conflict",
+    category: "Safety & Conflict Alerts",
     queries: [
       "Show high severity alerts",
       "Which stations are near villages with tiger activity?",
@@ -68,7 +69,7 @@ const QUICK_PROMPTS = [
     ],
   },
   {
-    category: "📊 Monitoring & Triage",
+    category: "Monitoring & Triage",
     queries: [
       "Give me a summary of this monitoring cycle",
       "How many blank images were removed?",
@@ -79,6 +80,7 @@ const QUICK_PROMPTS = [
 ];
 
 export default function ChatPage() {
+  const { t, language } = useLanguage();
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
@@ -173,7 +175,7 @@ export default function ChatPage() {
       const errorMsg: MessageItem = {
         id: `error-${Date.now()}`,
         sender: "assistant",
-        text: `⚠️ **Connection Error**: Unable to reach local backend API (${err.message}). Ensure the backend server is active on port 8000.`,
+        text: `**Connection Error**: Unable to reach local backend API (${err.message}). Ensure the backend server is active on port 8000.`,
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -276,43 +278,14 @@ export default function ChatPage() {
       >
         {/* Header Title Section */}
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "5px 14px",
-              borderRadius: "100px",
-              background: "rgba(184, 71, 40, 0.08)",
-              border: "1px solid rgba(184, 71, 40, 0.2)",
-              marginBottom: "12px",
-            }}
-          >
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "#10b981",
-                display: "inline-block",
-                boxShadow: "0 0 8px rgba(16, 185, 129, 0.6)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                color: "var(--lewa-terracotta)",
-              }}
-            >
-              Offline Field AI · Database-Grounded Intelligence
-            </span>
-          </div>
-
           <h1 className="lewa-title-section" style={{ fontSize: "clamp(32px, 4vw, 54px)" }}>
-            Conservation <span className="font-italic">Assistant</span>
+            {language === "hi" ? (
+              <>संरक्षण <span className="font-italic">एआई सहायक</span></>
+            ) : language === "mr" ? (
+              <>संवर्धन <span className="font-italic">एआई सहाय्यक</span></>
+            ) : (
+              <>Conservation <span className="font-italic">Assistant</span></>
+            )}
           </h1>
 
           <p
@@ -323,8 +296,7 @@ export default function ChatPage() {
               margin: "8px auto 0",
             }}
           >
-            Air-gapped natural language interface providing instant intelligence on individual
-            tigers, camera trap captures, territorial overlap, and village-adjacent movement.
+            {t.chat_subtitle}
           </p>
         </div>
 
@@ -642,7 +614,7 @@ export default function ChatPage() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask a question (e.g., 'Where was Choti Tara seen?', 'Show high risk alerts', 'Territory overlaps')..."
+            placeholder={t.chat_placeholder}
             disabled={loading}
             style={{
               flex: 1,

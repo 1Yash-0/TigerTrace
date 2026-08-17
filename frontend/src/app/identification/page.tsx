@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import LewaNav from "@/components/LewaNav";
-import LewaStamp from "@/components/LewaStamp";
 import {
   Upload,
   CheckCircle2,
@@ -14,6 +14,9 @@ import {
   MapPin,
   Clock,
   Activity,
+  Film,
+  Video,
+  AlertTriangle,
 } from "lucide-react";
 import {
   identifyTiger,
@@ -21,6 +24,7 @@ import {
   getTiger,
   getReviewQueue,
   resolveReview,
+  uploadVideo,
 } from "@/lib/api";
 
 interface Tiger {
@@ -84,6 +88,10 @@ const TIGER_COLORS: Record<string, string> = {
   "PTR-T06": "#EF4444",
 };
 
+const TIGER_IMAGES: Record<string, string> = {
+  "PTR-T03": "/kanha-avatar.jpg",
+};
+
 export default function IdentificationPage() {
   const [tigers, setTigers] = useState<Tiger[]>([]);
   const [selectedTigerId, setSelectedTigerId] = useState<string>("PTR-T01");
@@ -94,7 +102,49 @@ export default function IdentificationPage() {
   const [uploading, setUploading] = useState(false);
   const [idResult, setIdResult] = useState<IDResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [tab, setTab] = useState<"identify" | "tigers" | "review">("identify");
+  const [tab, setTab] = useState<"identify" | "tigers" | "review" | "video">("identify");
+
+  // Video Manager State
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoSuccessMsg, setVideoSuccessMsg] = useState<string | null>(null);
+  const [videoErrorMsg, setVideoErrorMsg] = useState<string | null>(null);
+  const [videoDragOver, setVideoDragOver] = useState(false);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoSelect = (file: File) => {
+    if (!file.type.startsWith("video/")) {
+      setVideoErrorMsg("Please select a valid video file (.mp4, .webm, .mov)");
+      return;
+    }
+    setVideoErrorMsg(null);
+    setVideoFile(file);
+    setVideoPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleVideoDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setVideoDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleVideoSelect(file);
+  };
+
+  const handleVideoUpload = async () => {
+    if (!videoFile) return;
+    setVideoUploading(true);
+    setVideoErrorMsg(null);
+    setVideoSuccessMsg(null);
+
+    try {
+      const res = await uploadVideo(videoFile);
+      setVideoSuccessMsg(`Video "${res.filename}" (${res.size_mb} MB) uploaded successfully and applied to background!`);
+    } catch (err: unknown) {
+      setVideoErrorMsg(err instanceof Error ? err.message : "Failed to upload video");
+    } finally {
+      setVideoUploading(false);
+    }
+  };
 
   useEffect(() => {
     listTigers().then(setTigers).catch(console.error);
@@ -207,13 +257,11 @@ export default function IdentificationPage() {
               MobileNetV3 species gating combined with ResNet-18 256-dimensional flank stripe embedding vectors for high-precision individual recognition.
             </p>
           </div>
-
-          <LewaStamp />
         </div>
 
         {/* Navigation Tabs */}
         <div style={{ display: "flex", gap: "12px", marginBottom: "36px", flexWrap: "wrap" }}>
-          {(["identify", "tigers", "review"] as const).map((t) => (
+          {(["identify", "tigers", "review", "video"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -233,9 +281,10 @@ export default function IdentificationPage() {
                 boxShadow: tab === t ? "0 4px 14px rgba(184, 71, 40, 0.3)" : "none",
               }}
             >
-              {t === "identify" && "🔍 Flank Image Re-ID"}
-              {t === "tigers" && `🐅 Registered Tigers (${tigers.length})`}
-              {t === "review" && `📋 Review Queue (${queue.length})`}
+              {t === "identify" && "Flank Image Re-ID"}
+              {t === "tigers" && `Registered Tigers (${tigers.length})`}
+              {t === "review" && `Review Queue (${queue.length})`}
+              {t === "video" && "Video Manager"}
             </button>
           ))}
         </div>
@@ -262,45 +311,124 @@ export default function IdentificationPage() {
                 input.click();
               }}
               style={{
-                background: "#fff",
-                border: "2px dashed var(--lewa-border)",
-                borderRadius: "16px",
-                padding: "54px 32px",
+                background: "#ffffff",
+                border: dragOver ? "2px dashed var(--lewa-terracotta)" : "2px dashed rgba(200, 82, 32, 0.35)",
+                borderRadius: "20px",
+                padding: "64px 32px",
                 textAlign: "center",
                 cursor: "pointer",
-                boxShadow: "0 8px 30px rgba(28,23,18,0.04)",
+                boxShadow: dragOver ? "0 12px 36px rgba(200, 82, 32, 0.12)" : "0 8px 30px rgba(28,23,18,0.04)",
                 transition: "all 0.3s ease",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {uploading ? (
-                <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                   <div
                     style={{
-                      width: "48px",
-                      height: "48px",
+                      width: "56px",
+                      height: "56px",
                       borderRadius: "50%",
                       border: "3px solid var(--lewa-border)",
                       borderTopColor: "var(--lewa-terracotta)",
                       animation: "spin 0.8s linear infinite",
-                      margin: "0 auto 16px",
+                      margin: "0 auto 20px",
                     }}
                   />
-                  <p style={{ color: "var(--lewa-charcoal)", fontWeight: 600, fontSize: "16px" }}>
-                    Extracting flank stripe embeddings via ResNet-18...
+                  <p style={{ color: "var(--lewa-charcoal)", fontWeight: 700, fontSize: "17px", margin: "0 0 6px" }}>
+                    Extracting Flank Stripe Biometrics...
+                  </p>
+                  <p style={{ color: "var(--lewa-muted)", fontSize: "13px", margin: 0 }}>
+                    Generating 256-dimensional embedding vector via ResNet-18
                   </p>
                 </div>
               ) : (
-                <div>
-                  <Upload
-                    size={48}
-                    style={{ color: "var(--lewa-terracotta)", marginBottom: "16px" }}
-                  />
-                  <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "22px", marginBottom: "8px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  {/* Glowing Circular Icon Container */}
+                  <div
+                    style={{
+                      width: "76px",
+                      height: "76px",
+                      borderRadius: "50%",
+                      background: "rgba(200, 82, 32, 0.08)",
+                      border: "1.5px solid rgba(200, 82, 32, 0.25)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: "20px",
+                      boxShadow: "0 6px 20px rgba(200, 82, 32, 0.08)",
+                    }}
+                  >
+                    <Upload
+                      size={32}
+                      style={{ color: "var(--lewa-terracotta)", display: "block" }}
+                    />
+                  </div>
+
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-serif)",
+                      fontSize: "24px",
+                      fontWeight: 600,
+                      color: "var(--lewa-charcoal)",
+                      margin: "0 0 8px",
+                    }}
+                  >
                     Upload a tiger flank image
                   </h3>
-                  <p style={{ color: "var(--lewa-muted)", fontSize: "14px", margin: 0 }}>
-                    Drag &amp; drop a cropped flank capture, or click to browse. (JPG / PNG supported)
+                  <p
+                    style={{
+                      color: "var(--lewa-muted)",
+                      fontSize: "14px",
+                      maxWidth: "480px",
+                      margin: "0 auto 16px",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    Drag &amp; drop a cropped flank capture, or click to browse files from your computer.
                   </p>
+
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      gap: "8px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        letterSpacing: "1px",
+                        textTransform: "uppercase",
+                        background: "var(--lewa-paper)",
+                        border: "1px solid var(--lewa-border)",
+                        padding: "4px 12px",
+                        borderRadius: "20px",
+                        color: "var(--lewa-muted)",
+                      }}
+                    >
+                      JPG · PNG · WebP
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        letterSpacing: "1px",
+                        textTransform: "uppercase",
+                        background: "rgba(16, 185, 129, 0.08)",
+                        border: "1px solid rgba(16, 185, 129, 0.3)",
+                        padding: "4px 12px",
+                        borderRadius: "20px",
+                        color: "#10b981",
+                      }}
+                    >
+                      Automated Stripe Matching
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
@@ -582,9 +710,21 @@ export default function IdentificationPage() {
                             alignItems: "center",
                             justifyContent: "center",
                             fontSize: "16px",
+                            overflow: "hidden",
+                            position: "relative",
                           }}
                         >
-                          🐅
+                          {TIGER_IMAGES[t.tiger_id] ? (
+                            <Image
+                              src={TIGER_IMAGES[t.tiger_id]}
+                              alt={t.name}
+                              width={36}
+                              height={36}
+                              style={{ objectFit: "cover", borderRadius: "50%" }}
+                            />
+                          ) : (
+                            <PawPrint size={18} style={{ color: color }} />
+                          )}
                         </div>
 
                         <div>
@@ -660,9 +800,20 @@ export default function IdentificationPage() {
                           justifyContent: "center",
                           fontSize: "26px",
                           boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                          overflow: "hidden",
                         }}
                       >
-                        🐅
+                        {TIGER_IMAGES[tigerDetail.tiger_id] ? (
+                          <Image
+                            src={TIGER_IMAGES[tigerDetail.tiger_id]}
+                            alt={tigerDetail.name}
+                            width={56}
+                            height={56}
+                            style={{ objectFit: "cover", borderRadius: "50%" }}
+                          />
+                        ) : (
+                          <PawPrint size={26} style={{ color: TIGER_COLORS[tigerDetail.tiger_id] || "var(--lewa-terracotta)" }} />
+                        )}
                       </div>
 
                       <div>
@@ -728,7 +879,7 @@ export default function IdentificationPage() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontSize: "18px" }}>📋</span>
+                    <Activity size={18} style={{ color: "var(--lewa-terracotta)" }} />
                     <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", margin: 0 }}>
                       Capture Log ({tigerDetail?.captures?.length || 0})
                     </h3>
@@ -936,6 +1087,173 @@ export default function IdentificationPage() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 4: VIDEO MANAGER */}
+        {tab === "video" && (
+          <div style={{ maxWidth: "800px" }}>
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "36px",
+                boxShadow: "0 8px 30px rgba(28,23,18,0.06)",
+                border: "1px solid var(--lewa-border)",
+              }}
+            >
+              <div style={{ marginBottom: "28px" }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "4px 12px",
+                    borderRadius: "20px",
+                    background: "rgba(184, 71, 40, 0.1)",
+                    color: "var(--lewa-terracotta)",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "1.5px",
+                    textTransform: "uppercase",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <Film size={14} /> Field Video Telemetry
+                </div>
+                <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "28px", margin: "4px 0 8px" }}>
+                  Upload Video from Field Station or Laptop
+                </h3>
+                <p style={{ color: "var(--lewa-muted)", fontSize: "14px", lineHeight: "1.6" }}>
+                  Upload high-definition camera trap MP4 or WebM video footage to update background telemetry and hero displays in real time.
+                </p>
+              </div>
+
+              {!videoFile ? (
+                <div
+                  className={`lewa-dropzone ${videoDragOver ? "dragging" : ""}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setVideoDragOver(true);
+                  }}
+                  onDragLeave={() => setVideoDragOver(false)}
+                  onDrop={handleVideoDrop}
+                  onClick={() => videoInputRef.current?.click()}
+                  style={{
+                    padding: "48px 24px",
+                    border: "2px dashed var(--lewa-border)",
+                    borderRadius: "14px",
+                    textAlign: "center",
+                    background: "var(--lewa-cream)",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <input
+                    type="file"
+                    ref={videoInputRef}
+                    accept="video/mp4,video/webm,video/quicktime"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleVideoSelect(f);
+                    }}
+                  />
+                  <Video
+                    size={48}
+                    style={{ color: "var(--lewa-terracotta)", margin: "0 auto 12px" }}
+                  />
+                  <div style={{ fontFamily: "var(--font-serif)", fontSize: "19px", fontWeight: 600, marginBottom: "6px" }}>
+                    Drag &amp; drop field video here, or browse files
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>
+                    Supports MP4, WebM, MOV up to 200MB
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div
+                    style={{
+                      borderRadius: "12px",
+                      overflow: "hidden",
+                      maxHeight: "320px",
+                      background: "#000",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {videoPreviewUrl && (
+                      <video
+                        src={videoPreviewUrl}
+                        controls
+                        autoPlay
+                        muted
+                        style={{ width: "100%", maxHeight: "320px", objectFit: "contain" }}
+                      />
+                    )}
+                  </div>
+
+                  <div style={{ fontSize: "14px", color: "var(--lewa-charcoal)", marginBottom: "20px", fontWeight: 600 }}>
+                    {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <button
+                      className="btn-brush"
+                      onClick={handleVideoUpload}
+                      disabled={videoUploading}
+                    >
+                      {videoUploading ? "Uploading & Processing..." : "APPLY AS HERO VIDEO"}
+                    </button>
+                    <button
+                      className="btn-pill-light"
+                      onClick={() => {
+                        setVideoFile(null);
+                        setVideoPreviewUrl(null);
+                      }}
+                      disabled={videoUploading}
+                    >
+                      Choose Different Video
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {videoErrorMsg && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "14px",
+                    borderRadius: "8px",
+                    background: "rgba(184, 71, 40, 0.1)",
+                    color: "var(--lewa-terracotta)",
+                    fontSize: "13px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <AlertCircle size={16} /> {videoErrorMsg}
+                </div>
+              )}
+
+              {videoSuccessMsg && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "14px",
+                    borderRadius: "8px",
+                    background: "rgba(16, 185, 129, 0.1)",
+                    color: "#10b981",
+                    fontSize: "13px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <CheckCircle2 size={16} /> {videoSuccessMsg}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>

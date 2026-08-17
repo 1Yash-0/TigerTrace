@@ -6,6 +6,7 @@ import LewaNav from "@/components/LewaNav";
 import { getAlerts, resolveAlert, runAlertEngine, API_BASE } from "@/lib/api";
 import { getNavigatedFromHome } from "@/lib/navigationTracker";
 import { Play, Download, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface Alert {
   id: number;
@@ -29,6 +30,7 @@ const alertTypeLabels: Record<string, string> = {
 
 export default function AlertsPage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [authorized, setAuthorized] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,16 +96,21 @@ export default function AlertsPage() {
               marginBottom: "12px",
             }}
           >
-            Real-time Territory Surveillance
+            {t.alerts_badge}
           </p>
 
           <h1 className="lewa-title-section">
-            Behavioral <span className="font-italic">Alerts</span>
+            {language === "hi" ? (
+              <>व्यवहार <span className="font-italic">सतर्कता</span></>
+            ) : language === "mr" ? (
+              <>वर्तणूक <span className="font-italic">अलर्ट</span></>
+            ) : (
+              <>Behavioral <span className="font-italic">Alerts</span></>
+            )}
           </h1>
 
           <p style={{ color: "var(--lewa-muted)", fontSize: "15px", maxWidth: "560px", margin: "16px auto 0" }}>
-            Automated anomaly detection monitoring boundary drift, nomadic
-            expansions, and individual absence durations across Pench Tiger Reserve.
+            {t.alerts_subtitle}
           </p>
         </div>
 

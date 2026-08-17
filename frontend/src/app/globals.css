@@ -205,9 +205,13 @@ body {
 }
 
 .lewa-nav-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   text-decoration: none;
   color: var(--lewa-charcoal);
+  z-index: 101;
 }
 
 .lewa-nav-logo h1 {
