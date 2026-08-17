@@ -63,14 +63,24 @@ class ReviewQueue(Base):
 class Alert(Base):
     __tablename__ = "alerts"
     id          = Column(Integer, primary_key=True, index=True)
-    tiger_id    = Column(String)
-    alert_type  = Column(String)   # range_shift | new_station | village_proximity | absence | zone_transition
-    severity    = Column(String)   # high | medium | low
+    tiger_id    = Column(String, index=True)
+    alert_type  = Column(String, index=True)   # range_shift | new_station | village_proximity | absence | zone_transition
+    severity    = Column(String, index=True)   # high | medium | low
     message     = Column(Text)
     evidence    = Column(Text)
     confidence  = Column(Float)
     created_at  = Column(DateTime, default=datetime.utcnow)
     resolved    = Column(Boolean, default=False)
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    id            = Column(Integer, primary_key=True, index=True)
+    message       = Column(Text)       # User's question
+    intent        = Column(String)     # Resolved intent
+    entities_json = Column(Text)       # JSON of extracted entities
+    response      = Column(Text)       # Generated response
+    mode          = Column(String)     # "OFFLINE" or "LOCAL_AI"
+    created_at    = Column(DateTime, default=datetime.utcnow)
 
 # ─── Create tables ──────────────────────────────────────────────────────────────
 

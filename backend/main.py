@@ -6,12 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
-from database import Base, engine, get_db, seed_database, \
-             Tiger, Capture, TriageRun, ReviewQueue, Alert
+from database import Base, engine, get_db, seed_database,Tiger, Capture, TriageRun, ReviewQueue, Alert, ChatMessage
 from services.triage_service        import run_triage
 from services.identification_service import identify_tiger
 from services.geospatial_service    import get_tiger_home_ranges, get_territory_overlaps
 from services.alert_service         import run_alert_engine
+from services.chatbot               import ChatbotService, ChatRequest
 
 # ── Bootstrap ──────────────────────────────────────────────────────────────────
 
@@ -348,5 +348,95 @@ async def upload_hero_video(file: UploadFile = File(...)):
     with open(destination, "wb") as f:
         f.write(contents)
     return {"status": "success", "filename": file.filename, "size_mb": round(len(contents) / (1024 * 1024), 2)}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PART 5 — CONSERVATION INTELLIGENCE CHATBOT
+# ══════════════════════════════════════════════════════════════════════════════
+
+_chatbot = ChatbotService()
+
+@app.post("/api/chat")
+def chat_message(req: ChatRequest, db: Session = Depends(get_db)):
+    """Process a natural language question about Pench Tiger Reserve data."""
+    response = _chatbot.process_message(req, db)
+    return response.model_dump()
+
+@app.get("/api/chat/history")
+def chat_history(limit: int = 50, db: Session = Depends(get_db)):
+    """Retrieve recent chat history."""
+    return _chatbot.get_history(db, limit=limit)
+
+@app.delete("/api/chat/history")
+def clear_chat_history(db: Session = Depends(get_db)):
+    """Clear all chat history."""
+    success = _chatbot.clear_history(db)
+    return {"status": "cleared" if success else "error"}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PART 6 — PATROL PRIORITY & MANAGEMENT RECOMMENDATION ENGINE
+# ══════════════════════════════════════════════════════════════════════════════
+
+from services.patrol_service import (
+    get_station_patrol_priorities,
+    get_station_patrol_detail,
+    get_patrol_summary,
+    get_suggested_patrol_sequence,
+)
+
+@app.get("/api/patrol/stations")
+def list_patrol_stations(db: Session = Depends(get_db)):
+    """Get all camera stations ranked by transparent patrol priority."""
+    return get_station_patrol_priorities(db)
+
+@app.get("/api/patrol/stations/{station_id}")
+def station_patrol_detail(station_id: str, db: Session = Depends(get_db)):
+    """Get exhaustive factor breakdown, evidence, and historical trend for a specific station."""
+    detail = get_station_patrol_detail(station_id, db)
+    if not detail:
+        raise HTTPException(status_code=404, detail=f"Station {station_id} not found")
+    return detail
+
+@app.get("/api/patrol/summary")
+def patrol_summary(db: Session = Depends(get_db)):
+    """Get executive priority counts, top 5 stations, and suggested patrol sequence."""
+    return get_patrol_summary(db)
+
+@app.get("/api/patrol/sequence")
+def patrol_sequence(limit: int = 6, db: Session = Depends(get_db)):
+    """Get suggested tactical patrol sequence based on priority rankings."""
+    return get_suggested_patrol_sequence(db, limit=limit)
+
+@app.get("/api/export/patrol")
+def export_patrol_csv(db: Session = Depends(get_db)):
+    """Export station patrol priorities as a CSV report for forest department operations."""
+    stations = get_station_patrol_priorities(db)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Station ID", "Priority Level", "Priority Score", "Evidence Confidence",
+        "Zone", "Village Adjacent", "Total Captures", "Unique Tigers",
+        "Movement Score", "Conflict Score", "Anomaly Score", "Top Reason"
+    ])
+    for s in stations:
+        writer.writerow([
+            s["station_id"],
+            s["priority_level"],
+            s["priority_score"],
+            f"{s['evidence_confidence']}%",
+            s["zone"],
+            "Yes" if s["is_village_adjacent"] else "No",
+            s["total_captures"],
+            s["unique_tigers_count"],
+            s["components"]["movement"]["score"],
+            s["components"]["conflict"]["score"],
+            s["components"]["anomaly"]["score"],
+            s["top_reasons"][0] if s["top_reasons"] else "Routine",
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=pench_patrol_priorities.csv"}
+    )
 
 

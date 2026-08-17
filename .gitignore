@@ -1,5 +1,10 @@
-﻿__pycache__/
+__pycache__/
 *.pyc
+venv/
+backend/venv/
+.venv/
+node_modules/
+.next/
 
 .env
 .env.*
