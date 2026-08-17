@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import LewaNav from "@/components/LewaNav";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import {
   getPatrolSummary,
   getPatrolStations,
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 
 export default function PatrolPriorityPage() {
+  const { t, language } = useLanguage();
   const [summary, setSummary] = useState<PatrolSummaryData | null>(null);
   const [stations, setStations] = useState<PatrolStation[]>([]);
   const [sequence, setSequence] = useState<PatrolSequenceItem[]>([]);
@@ -97,43 +99,14 @@ export default function PatrolPriorityPage() {
       >
         {/* Header Title */}
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "5px 14px",
-              borderRadius: "100px",
-              background: "rgba(184, 71, 40, 0.08)",
-              border: "1px solid rgba(184, 71, 40, 0.2)",
-              marginBottom: "12px",
-            }}
-          >
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: "#ef4444",
-                display: "inline-block",
-                boxShadow: "0 0 8px rgba(239, 68, 68, 0.6)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                color: "var(--lewa-terracotta)",
-              }}
-            >
-              Field Patrol Intelligence & Deployment Prioritization
-            </span>
-          </div>
-
           <h1 className="lewa-title-section" style={{ fontSize: "clamp(32px, 4.5vw, 56px)" }}>
-            Patrol <span className="font-italic">Priorities</span>
+            {language === "hi" ? (
+              <>गश्त <span className="font-italic">प्राथमिकताएं</span></>
+            ) : language === "mr" ? (
+              <>गस्त <span className="font-italic">प्राधान्यक्रम</span></>
+            ) : (
+              <>Patrol <span className="font-italic">Priorities</span></>
+            )}
           </h1>
 
           <p
@@ -144,8 +117,7 @@ export default function PatrolPriorityPage() {
               margin: "8px auto 0",
             }}
           >
-            Transparent, evidence-based prioritization scoring camera stations (0–100) using
-            recent tiger movement intensity, community conflict proximity, and spatial anomaly alerts.
+            {t.patrol_subtitle}
           </p>
         </div>
 
@@ -168,7 +140,7 @@ export default function PatrolPriorityPage() {
             }}
           >
             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              Critical Priority
+              {t.patrol_critical}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
               <span style={{ fontSize: "32px", fontWeight: 700, color: "#ef4444" }}>{counts.critical}</span>
@@ -189,7 +161,7 @@ export default function PatrolPriorityPage() {
             }}
           >
             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              High Priority
+              {t.patrol_high}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
               <span style={{ fontSize: "32px", fontWeight: 700, color: "#f97316" }}>{counts.high}</span>
@@ -210,7 +182,7 @@ export default function PatrolPriorityPage() {
             }}
           >
             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              Moderate Priority
+              {t.patrol_moderate}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
               <span style={{ fontSize: "32px", fontWeight: 700, color: "#eab308" }}>{counts.moderate}</span>
@@ -231,7 +203,7 @@ export default function PatrolPriorityPage() {
             }}
           >
             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              Low Priority
+              {t.patrol_low}
             </p>
             <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
               <span style={{ fontSize: "32px", fontWeight: 700, color: "#10b981" }}>{counts.low}</span>
@@ -289,7 +261,7 @@ export default function PatrolPriorityPage() {
               className={filter === "village" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              ⚠️ Village Adjacent
+              Village Adjacent
             </button>
             <button
               onClick={() => setFilter("buffer")}
@@ -501,7 +473,7 @@ export default function PatrolPriorityPage() {
                   <p style={{ color: "var(--lewa-muted)", fontSize: "13px", marginTop: "4px" }}>
                     Coordinates: {selectedStation.latitude.toFixed(4)}°N, {selectedStation.longitude.toFixed(4)}°E • Zone:{" "}
                     <strong>{selectedStation.zone.toUpperCase()}</strong>
-                    {selectedStation.is_village_adjacent ? " • ⚠️ Village Boundary Interface" : ""}
+                    {selectedStation.is_village_adjacent ? " • Village Boundary Interface" : ""}
                   </p>
                 </div>
 
@@ -544,7 +516,7 @@ export default function PatrolPriorityPage() {
                   <div style={{ background: "var(--lewa-ivory)", padding: "14px 16px", borderRadius: "10px", border: "1px solid var(--lewa-border)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                       <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--lewa-charcoal)" }}>
-                        🐅 Tiger Movement Activity
+                        Tiger Movement Activity
                       </span>
                       <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--lewa-charcoal)" }}>
                         {selectedStation.components.movement.score}/100{" "}
@@ -564,7 +536,7 @@ export default function PatrolPriorityPage() {
                   <div style={{ background: "var(--lewa-ivory)", padding: "14px 16px", borderRadius: "10px", border: "1px solid var(--lewa-border)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                       <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--lewa-charcoal)" }}>
-                        🏘️ Conflict & Buffer Proximity
+                        Conflict & Buffer Proximity
                       </span>
                       <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--lewa-charcoal)" }}>
                         {selectedStation.components.conflict.score}/100{" "}
@@ -584,7 +556,7 @@ export default function PatrolPriorityPage() {
                   <div style={{ background: "var(--lewa-ivory)", padding: "14px 16px", borderRadius: "10px", border: "1px solid var(--lewa-border)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                       <span style={{ fontSize: "13.5px", fontWeight: 600, color: "var(--lewa-charcoal)" }}>
-                        ⚠️ Spatial Anomalies & Alerts
+                        Spatial Anomalies & Alerts
                       </span>
                       <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--lewa-charcoal)" }}>
                         {selectedStation.components.anomaly.score}/100{" "}

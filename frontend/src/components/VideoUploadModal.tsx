@@ -113,7 +113,7 @@ export default function VideoUploadModal({
         </button>
 
         {/* Title */}
-        <div style={{ textCenter: "center", marginBottom: "24px" }}>
+        <div style={{ textAlign: "center", marginBottom: "24px" }}>
           <div
             style={{
               display: "inline-flex",

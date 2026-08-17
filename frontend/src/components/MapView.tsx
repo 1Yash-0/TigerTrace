@@ -158,7 +158,7 @@ export default function MapView({
 
         // Rich Interactive Popup
         const villageTag = st.is_village_adjacent
-          ? `<span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">⚠️ VILLAGE INTERFACE</span>`
+          ? `<span style="background:rgba(239,68,68,0.15);color:#ef4444;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">VILLAGE INTERFACE</span>`
           : "";
 
         const tigerList = st.contributing_tigers.slice(0, 3).map(t => `${t.name} (${t.captures_at_station}c)`).join(", ");

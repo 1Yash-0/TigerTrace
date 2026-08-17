@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload } from "lucide-react";
-import VideoUploadModal from "./VideoUploadModal";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
+import LanguageSelector from "./LanguageSelector";
 
-export default function LewaNav({ forceScrolled }: { forceScrolled?: boolean } = {}) {
+interface LewaNavProps {
+  forceScrolled?: boolean;
+}
+
+export default function LewaNav({ forceScrolled }: LewaNavProps = {}) {
+  const { t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,62 +24,44 @@ export default function LewaNav({ forceScrolled }: { forceScrolled?: boolean } =
   const isScrolled = forceScrolled !== undefined ? forceScrolled : scrolled;
 
   return (
-    <>
-      <header
-        className={`lewa-nav ${isScrolled ? "scrolled" : "transparent-light"}`}
-      >
-        {/* Left side */}
-        <div className="lewa-nav-left">
-          <Link href="/identification" className="btn-brush">
-            IDENTIFY TIGER
-          </Link>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="btn-pill-light"
-            style={{ padding: "6px 14px", fontSize: "10px" }}
-          >
-            <Upload size={12} /> UPLOAD VIDEO
-          </button>
-          <a href="#wildlife" className="lewa-nav-link active">
-            TIGER HABITAT
-          </a>
-        </div>
-
-        {/* Center Wordmark */}
-        <Link href="/" className="lewa-nav-logo">
-          <h1>TigerSpot</h1>
-          <p>PENCH TIGER RESERVE · STRIPE AI</p>
+    <header
+      className={`lewa-nav ${isScrolled ? "scrolled" : "transparent-light"}`}
+    >
+      {/* Left side */}
+      <div className="lewa-nav-left">
+        <Link href="/identification" className="btn-brush">
+          {t.nav_identify_tiger}
         </Link>
+        <Link href="/#wildlife" className="lewa-nav-link active">
+          {t.nav_tiger_habitat}
+        </Link>
+        <Link href="/patrol" className="lewa-nav-link" style={{ color: "var(--lewa-terracotta)", fontWeight: 600 }}>
+          {t.nav_patrol_priority}
+        </Link>
+      </div>
 
-        {/* Right side */}
-        <div className="lewa-nav-right">
-          <Link href="/patrol" className="lewa-nav-link" style={{ color: "var(--lewa-terracotta)", fontWeight: 600 }}>
-            PATROL PRIORITY
-          </Link>
-          <Link href="/chat" className="lewa-nav-link">
-            AI ASSISTANT
-          </Link>
-          <Link href="/map" className="lewa-nav-link">
-            TERRITORY
-          </Link>
-          <Link href="/alerts" className="lewa-nav-link">
-            ALERTS
-          </Link>
-          <Link href="/triage" className="lewa-nav-link">
-            TRIAGE
-          </Link>
-        </div>
-      </header>
+      {/* Center Wordmark */}
+      <Link href="/" className="lewa-nav-logo">
+        <h1>{t.nav_brand_title}</h1>
+        <p>{t.nav_brand_subtitle}</p>
+      </Link>
 
-      {/* Video Upload Modal */}
-      <VideoUploadModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onVideoUploaded={() => {
-          // Force reload or event dispatch
-          window.location.reload();
-        }}
-      />
-    </>
+      {/* Right side */}
+      <div className="lewa-nav-right" style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+        <Link href="/chat" className="lewa-nav-link">
+          {t.nav_ai_assistant}
+        </Link>
+        <Link href="/map" className="lewa-nav-link">
+          {t.nav_territory}
+        </Link>
+        <Link href="/alerts" className="lewa-nav-link">
+          {t.nav_alerts}
+        </Link>
+        <Link href="/triage" className="lewa-nav-link">
+          {t.nav_triage}
+        </Link>
+        <LanguageSelector variant={isScrolled ? "dark" : "light"} />
+      </div>
+    </header>
   );
 }

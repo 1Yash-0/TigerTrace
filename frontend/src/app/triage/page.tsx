@@ -6,6 +6,7 @@ import LewaNav from "@/components/LewaNav";
 import { runTriage, getTriageHistory } from "@/lib/api";
 import { getNavigatedFromHome } from "@/lib/navigationTracker";
 import { Play, CheckCircle2, XCircle, HardDrive, Clock, ScanSearch } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface TriageResult {
   total_images: number;
@@ -28,6 +29,7 @@ interface TriageHistoryItem {
 
 export default function TriagePage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [authorized, setAuthorized] = useState(false);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<TriageResult | null>(null);
@@ -76,16 +78,21 @@ export default function TriagePage() {
               marginBottom: "12px",
             }}
           >
-            MegaDetector V6 Computer Vision
+            {t.triage_badge}
           </p>
 
           <h1 className="lewa-title-section">
-            Camera Trap <span className="font-italic">Triage</span>
+            {language === "hi" ? (
+              <>कैमरा ट्रैप <span className="font-italic">ट्रायेज</span></>
+            ) : language === "mr" ? (
+              <>कॅमेरा ट्रॅप <span className="font-italic">ट्रायाज</span></>
+            ) : (
+              <>Camera Trap <span className="font-italic">Triage</span></>
+            )}
           </h1>
 
           <p style={{ color: "var(--lewa-muted)", fontSize: "15px", maxWidth: "560px", margin: "16px auto 0" }}>
-            Automated blank image filtering quarantining empty frames triggered
-            by wind or grasses, retaining valid predator captures.
+            {t.triage_subtitle}
           </p>
         </div>
 
