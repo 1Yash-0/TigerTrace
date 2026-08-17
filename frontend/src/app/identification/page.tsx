@@ -100,6 +100,8 @@ export default function IdentificationPage() {
 
   const [queue, setQueue] = useState<ReviewItem[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [idResult, setIdResult] = useState<IDResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [tab, setTab] = useState<"identify" | "tigers" | "review" | "video">("identify");
@@ -164,12 +166,18 @@ export default function IdentificationPage() {
 
   const handleFile = useCallback(async (file: File) => {
     setUploading(true);
+    setUploadError(null);
     setIdResult(null);
+    setUploadedPreviewUrl(URL.createObjectURL(file));
     try {
       const res = await identifyTiger(file);
       setIdResult(res);
-    } catch (e) {
+      // Refresh review queue & tiger list if match was recorded
+      listTigers().then(setTigers).catch(console.error);
+      getReviewQueue().then(setQueue).catch(console.error);
+    } catch (e: unknown) {
       console.error(e);
+      setUploadError(e instanceof Error ? e.message : "Unable to reach identification service. Please check your backend connection.");
     } finally {
       setUploading(false);
     }
@@ -433,6 +441,26 @@ export default function IdentificationPage() {
               )}
             </div>
 
+            {/* Upload Error Banner */}
+            {uploadError && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "12px",
+                  padding: "16px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  color: "#dc2626",
+                }}
+              >
+                <AlertCircle size={20} style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>{uploadError}</span>
+              </div>
+            )}
+
             {/* Inference Results Card */}
             {idResult && (
               <div
@@ -463,15 +491,91 @@ export default function IdentificationPage() {
                   </span>
                 </div>
 
-                {/* Top Match & Alt Match Grid */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "20px",
-                    marginBottom: "32px",
-                  }}
-                >
+                {/* If Not a Tiger */}
+                {idResult.status === "not_a_tiger" ? (
+                  <div
+                    style={{
+                      background: "var(--lewa-ivory)",
+                      borderRadius: "12px",
+                      padding: "28px",
+                      border: "1px solid var(--lewa-border)",
+                      textAlign: "center",
+                    }}
+                  >
+                    <AlertTriangle size={36} style={{ color: "var(--lewa-amber)", marginBottom: "12px" }} />
+                    <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "20px", marginBottom: "8px" }}>
+                      Species Gate: Non-Tiger Capture Filtered
+                    </h3>
+                    <p style={{ color: "var(--lewa-muted)", fontSize: "14px", maxWidth: "600px", margin: "0 auto 16px" }}>
+                      The MobileNetV3 species classifier determined this image does not contain an Indian Tiger (<span className="font-italic">Panthera tigris</span>) or is an un-cropped habitat frame. ResNet-18 stripe extraction was bypassed.
+                    </p>
+                    {uploadedPreviewUrl && (
+                      <div style={{ marginTop: "16px", display: "inline-block" }}>
+                        <img
+                          src={uploadedPreviewUrl}
+                          alt="Uploaded capture"
+                          style={{
+                            maxWidth: "280px",
+                            maxHeight: "180px",
+                            borderRadius: "8px",
+                            objectFit: "cover",
+                            border: "1px solid var(--lewa-border)",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {/* Visual Comparison Grid */}
+                    {uploadedPreviewUrl && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "20px",
+                          background: "var(--lewa-paper)",
+                          borderRadius: "12px",
+                          padding: "16px 20px",
+                          marginBottom: "24px",
+                          border: "1px solid var(--lewa-border)",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <img
+                          src={uploadedPreviewUrl}
+                          alt="Uploaded flank query"
+                          style={{
+                            width: "90px",
+                            height: "90px",
+                            borderRadius: "8px",
+                            objectFit: "cover",
+                            border: "2px solid var(--lewa-terracotta)",
+                          }}
+                        />
+                        <div>
+                          <div style={{ fontSize: "11px", letterSpacing: "1px", textTransform: "uppercase", color: "var(--lewa-terracotta)", fontWeight: 700 }}>
+                            Query Image Uploaded
+                          </div>
+                          <div style={{ fontSize: "15px", fontWeight: 600, marginTop: "2px" }}>
+                            256-D ResNet-18 Embedding Extracted &amp; Matched
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--lewa-muted)", marginTop: "2px" }}>
+                            Pench Gallery Comparison: {idResult.top_match.tiger_id} ({TIGER_CLASSIFICATION_NAMES[idResult.top_match.tiger_id] || "Registered Tiger"})
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Top Match & Alt Match Grid */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "20px",
+                        marginBottom: "32px",
+                      }}
+                    >
                   {/* Top Match Card */}
                   <div
                     style={{
@@ -635,10 +739,12 @@ export default function IdentificationPage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         )}
+      </div>
+    )}
 
         {/* TAB 2: REGISTERED TIGERS & DETAILED CAPTURE LOGS */}
         {tab === "tigers" && (
