@@ -31,6 +31,22 @@ import {
   Layers,
 } from "lucide-react";
 
+// Priority-level presentation mapped to Lewa tokens — replaces the backend's
+// raw badge hex/emoji fields with theme colors (CRITICAL also has a solid form
+// for its header chip). MODERATE/LOW reuse the amber/forest severity tokens.
+const PATROL_LEVEL_STYLE: Record<string, { bg: string; ink: string; solid?: string }> = {
+  CRITICAL: {
+    bg: "var(--lewa-pat-critical-bg)",
+    ink: "var(--lewa-pat-critical-ink)",
+    solid: "var(--lewa-pat-critical-solid)",
+  },
+  HIGH: { bg: "var(--lewa-pat-high-bg)", ink: "var(--lewa-pat-high-ink)" },
+  MODERATE: { bg: "var(--lewa-sev-medium-bg)", ink: "var(--lewa-sev-medium-ink)" },
+  LOW: { bg: "var(--lewa-sev-low-bg)", ink: "var(--lewa-sev-low-ink)" },
+};
+
+const levelStyle = (level: string) => PATROL_LEVEL_STYLE[level] ?? PATROL_LEVEL_STYLE.MODERATE;
+
 export default function PatrolPriorityPage() {
   const { t, language } = useLanguage();
   const [summary, setSummary] = useState<PatrolSummaryData | null>(null);
@@ -130,89 +146,39 @@ export default function PatrolPriorityPage() {
             marginBottom: "32px",
           }}
         >
-          <div
-            style={{
-              background: "var(--lewa-ivory)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              borderLeft: "4px solid #ef4444",
-              borderRadius: "14px",
-              padding: "18px 20px",
-            }}
-          >
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              {t.patrol_critical}
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
-              <span style={{ fontSize: "32px", fontWeight: 700, color: "#ef4444" }}>{counts.critical}</span>
-              <span style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>stations (≥75)</span>
-            </div>
-            <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px" }}>
-              Immediate inspection recommended
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "var(--lewa-ivory)",
-              border: "1px solid rgba(249, 115, 22, 0.3)",
-              borderLeft: "4px solid #f97316",
-              borderRadius: "14px",
-              padding: "18px 20px",
-            }}
-          >
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              {t.patrol_high}
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
-              <span style={{ fontSize: "32px", fontWeight: 700, color: "#f97316" }}>{counts.high}</span>
-              <span style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>stations (50–74)</span>
-            </div>
-            <p style={{ fontSize: "11px", color: "#f97316", marginTop: "4px" }}>
-              Elevated movement corridor
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "var(--lewa-ivory)",
-              border: "1px solid rgba(234, 179, 8, 0.3)",
-              borderLeft: "4px solid #eab308",
-              borderRadius: "14px",
-              padding: "18px 20px",
-            }}
-          >
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              {t.patrol_moderate}
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
-              <span style={{ fontSize: "32px", fontWeight: 700, color: "#eab308" }}>{counts.moderate}</span>
-              <span style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>stations (25–49)</span>
-            </div>
-            <p style={{ fontSize: "11px", color: "#ca8a04", marginTop: "4px" }}>
-              Periodic monitoring sweep
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "var(--lewa-ivory)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              borderLeft: "4px solid #10b981",
-              borderRadius: "14px",
-              padding: "18px 20px",
-            }}
-          >
-            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)" }}>
-              {t.patrol_low}
-            </p>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
-              <span style={{ fontSize: "32px", fontWeight: 700, color: "#10b981" }}>{counts.low}</span>
-              <span style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>stations (&lt;25)</span>
-            </div>
-            <p style={{ fontSize: "11px", color: "#059669", marginTop: "4px" }}>
-              Standard baseline coverage
-            </p>
-          </div>
+          {(
+            [
+              { key: "critical", label: t.patrol_critical, count: counts.critical, range: "stations (≥75)", note: "Immediate inspection recommended" },
+              { key: "high", label: t.patrol_high, count: counts.high, range: "stations (50–74)", note: "Elevated movement corridor" },
+              { key: "moderate", label: t.patrol_moderate, count: counts.moderate, range: "stations (25–49)", note: "Periodic monitoring sweep" },
+              { key: "low", label: t.patrol_low, count: counts.low, range: "stations (<25)", note: "Standard baseline coverage" },
+            ] as const
+          ).map((card) => {
+            const style = levelStyle(card.key.toUpperCase());
+            return (
+              <div
+                key={card.key}
+                style={{
+                  background: "var(--lewa-ivory)",
+                  border: "1px solid var(--lewa-border)",
+                  borderRadius: "14px",
+                  padding: "18px 20px",
+                }}
+              >
+                <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "var(--lewa-muted)", display: "flex", alignItems: "center", gap: "7px" }}>
+                  <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: style.ink, flexShrink: 0 }} />
+                  {card.label}
+                </p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "4px" }}>
+                  <span style={{ fontSize: "32px", fontWeight: 700, color: style.ink, fontVariantNumeric: "tabular-nums" }}>{card.count}</span>
+                  <span style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>{card.range}</span>
+                </div>
+                <p style={{ fontSize: "11px", color: style.ink, marginTop: "4px" }}>
+                  {card.note}
+                </p>
+              </div>
+            );
+          })}
         </div>
 
         {/* Action Controls & Filters Bar */}
@@ -240,21 +206,21 @@ export default function PatrolPriorityPage() {
               className={filter === "CRITICAL" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              🔴 Critical ({counts.critical})
+              Critical ({counts.critical})
             </button>
             <button
               onClick={() => setFilter("HIGH")}
               className={filter === "HIGH" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              🟠 High ({counts.high})
+              High ({counts.high})
             </button>
             <button
               onClick={() => setFilter("MODERATE")}
               className={filter === "MODERATE" ? "btn-brush" : "btn-pill-light"}
               style={{ padding: "5px 14px", fontSize: "11px" }}
             >
-              🟡 Moderate ({counts.moderate})
+              Moderate ({counts.moderate})
             </button>
             <button
               onClick={() => setFilter("village")}
@@ -336,6 +302,7 @@ export default function PatrolPriorityPage() {
             ) : (
               filteredStations.map((st, index) => {
                 const isSelected = selectedStation?.station_id === st.station_id;
+                const stStyle = levelStyle(st.priority_level);
                 return (
                   <div
                     key={st.station_id}
@@ -357,15 +324,20 @@ export default function PatrolPriorityPage() {
                         <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--lewa-muted)", minWidth: "18px" }}>
                           #{index + 1}
                         </span>
-                        <div
+                        <span
                           style={{
-                            width: "10px",
-                            height: "10px",
-                            borderRadius: "50%",
-                            background: st.badge_color,
-                            flexShrink: 0,
+                            padding: "2px 8px",
+                            borderRadius: "100px",
+                            background: stStyle.bg,
+                            color: stStyle.ink,
+                            fontSize: "9px",
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
                           }}
-                        />
+                        >
+                          {st.priority_level}
+                        </span>
                         <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--lewa-charcoal)" }}>
                           {st.station_id}
                         </span>
@@ -375,8 +347,8 @@ export default function PatrolPriorityPage() {
                               fontSize: "10px",
                               padding: "2px 6px",
                               borderRadius: "4px",
-                              background: "rgba(239, 68, 68, 0.1)",
-                              color: "#ef4444",
+                              background: "var(--lewa-sev-high-bg)",
+                              color: "var(--lewa-sev-high-ink)",
                               fontWeight: 600,
                             }}
                           >
@@ -386,7 +358,7 @@ export default function PatrolPriorityPage() {
                       </div>
 
                       <div style={{ textAlign: "right" }}>
-                        <span style={{ fontSize: "18px", fontWeight: 800, color: st.badge_color }}>
+                        <span style={{ fontSize: "18px", fontWeight: 800, color: stStyle.ink, fontVariantNumeric: "tabular-nums" }}>
                           {st.priority_score}
                         </span>
                         <span style={{ fontSize: "11px", color: "var(--lewa-muted)" }}>/100</span>
@@ -415,7 +387,7 @@ export default function PatrolPriorityPage() {
                         style={{
                           width: `${st.priority_score}%`,
                           height: "100%",
-                          background: st.badge_color,
+                          background: stStyle.ink,
                           borderRadius: "100px",
                         }}
                       />
@@ -450,42 +422,54 @@ export default function PatrolPriorityPage() {
                   paddingBottom: "18px",
                 }}
               >
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <h2 style={{ fontSize: "28px", fontWeight: 700, color: "var(--lewa-charcoal)", margin: 0 }}>
-                      Station {selectedStation.station_id}
-                    </h2>
-                    <span
-                      style={{
-                        padding: "4px 10px",
-                        borderRadius: "100px",
-                        background: selectedStation.badge_bg,
-                        color: selectedStation.badge_color,
-                        fontSize: "11px",
-                        fontWeight: 700,
-                        letterSpacing: "0.5px",
-                      }}
-                    >
-                      {selectedStation.badge_icon} {selectedStation.priority_level} PRIORITY
-                    </span>
-                  </div>
+                {(() => {
+                  const selStyle = levelStyle(selectedStation.priority_level);
+                  const isCritical = selectedStation.priority_level === "CRITICAL" && selStyle.solid;
+                  return (
+                    <>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <h2 style={{ fontSize: "28px", fontWeight: 700, color: "var(--lewa-charcoal)", margin: 0 }}>
+                            Station {selectedStation.station_id}
+                          </h2>
+                          <span
+                            style={{
+                              padding: "4px 10px",
+                              borderRadius: "100px",
+                              background: isCritical ? selStyle.solid : selStyle.bg,
+                              color: isCritical ? "var(--lewa-cream)" : selStyle.ink,
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              letterSpacing: "0.5px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: isCritical ? "var(--lewa-cream)" : selStyle.ink }} />
+                            {selectedStation.priority_level} PRIORITY
+                          </span>
+                        </div>
 
-                  <p style={{ color: "var(--lewa-muted)", fontSize: "13px", marginTop: "4px" }}>
-                    Coordinates: {selectedStation.latitude.toFixed(4)}°N, {selectedStation.longitude.toFixed(4)}°E • Zone:{" "}
-                    <strong>{selectedStation.zone.toUpperCase()}</strong>
-                    {selectedStation.is_village_adjacent ? " • Village Boundary Interface" : ""}
-                  </p>
-                </div>
+                        <p style={{ color: "var(--lewa-muted)", fontSize: "13px", marginTop: "4px" }}>
+                          Coordinates: {selectedStation.latitude.toFixed(4)}°N, {selectedStation.longitude.toFixed(4)}°E • Zone:{" "}
+                          <strong>{selectedStation.zone.toUpperCase()}</strong>
+                          {selectedStation.is_village_adjacent ? " • Village Boundary Interface" : ""}
+                        </p>
+                      </div>
 
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "38px", fontWeight: 800, color: selectedStation.badge_color, lineHeight: 1 }}>
-                    {selectedStation.priority_score}
-                    <span style={{ fontSize: "16px", color: "var(--lewa-muted)", fontWeight: 500 }}>/100</span>
-                  </div>
-                  <span style={{ fontSize: "11px", color: "var(--lewa-muted)" }}>
-                    Evidence Confidence: <strong>{selectedStation.evidence_confidence}%</strong>
-                  </span>
-                </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: "38px", fontWeight: 800, color: selStyle.ink, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+                          {selectedStation.priority_score}
+                          <span style={{ fontSize: "16px", color: "var(--lewa-muted)", fontWeight: 500 }}>/100</span>
+                        </div>
+                        <span style={{ fontSize: "11px", color: "var(--lewa-muted)" }}>
+                          Evidence Confidence: <strong>{selectedStation.evidence_confidence}%</strong>
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Deterministic Explanation Box */}
@@ -615,7 +599,7 @@ export default function PatrolPriorityPage() {
                         style={{
                           width: "100%",
                           height: `${Math.max(12, (c.score / 100) * 50)}px`,
-                          background: idx === 4 ? selectedStation.badge_color : "rgba(0,0,0,0.15)",
+                          background: idx === 4 ? levelStyle(selectedStation.priority_level).ink : "rgba(0,0,0,0.15)",
                           borderRadius: "4px",
                         }}
                       />
@@ -734,8 +718,8 @@ export default function PatrolPriorityPage() {
                     <strong style={{ fontSize: "16px", color: "var(--lewa-charcoal)" }}>{item.station_id}</strong>
                   </div>
 
-                  <span style={{ fontSize: "12px", fontWeight: 700 }}>
-                    {item.badge_icon} {item.priority_score}/100
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: levelStyle(item.priority_level).ink, fontVariantNumeric: "tabular-nums" }}>
+                    {item.priority_score}/100
                   </span>
                 </div>
 

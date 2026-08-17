@@ -36,6 +36,14 @@
   --lewa-sev-low-bg: rgba(26, 59, 43, 0.10);
   --lewa-sev-low-ink: #1A3B2B;
 
+  /* Patrol priority levels — CRITICAL/HIGH inherit the rust/terracotta family,
+     MODERATE/LOW reuse the amber/forest severity tokens above */
+  --lewa-pat-critical-bg: rgba(170, 61, 18, 0.14);
+  --lewa-pat-critical-ink: #93330E;
+  --lewa-pat-critical-solid: #AA3D12;
+  --lewa-pat-high-bg: rgba(200, 82, 32, 0.10);
+  --lewa-pat-high-ink: #AA3D12;
+
   /* Fonts */
   --font-serif: 'Playfair Display', 'Georgia', serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
