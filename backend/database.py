@@ -183,9 +183,20 @@ def seed_database():
         db.close()
         return
 
-    csv_path = "../pench_camera_logs_ready.csv"
-    if not os.path.exists(csv_path):
-        print(f"[WARN] Cannot find {csv_path}. Skipping database seed.")
+    possible_csvs = [
+        "../pench_camera_logs_ready.csv",
+        "pench_camera_logs_ready.csv",
+        os.path.join(os.path.dirname(__file__), "..", "pench_camera_logs_ready.csv"),
+        os.path.join(os.path.dirname(__file__), "pench_camera_logs_ready.csv"),
+    ]
+    csv_path = None
+    for p in possible_csvs:
+        if os.path.exists(p):
+            csv_path = p
+            break
+
+    if not csv_path:
+        print("[WARN] Cannot find pench_camera_logs_ready.csv. Skipping database seed.")
         db.close()
         return
 
