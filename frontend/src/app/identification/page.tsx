@@ -1000,15 +1000,29 @@ export default function IdentificationPage() {
                   borderRadius: "16px",
                   padding: "60px 32px",
                   textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
                   boxShadow: "0 8px 30px rgba(28,23,18,0.04)",
                   border: "1px solid var(--lewa-border)",
                 }}
               >
-                <ShieldCheck size={48} style={{ color: "var(--lewa-terracotta)", marginBottom: "16px", opacity: 0.6 }} />
-                <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "22px", marginBottom: "8px" }}>
-                  Review Queue Empty
-                </h3>
-                <p style={{ color: "var(--lewa-muted)", fontSize: "14px" }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <ShieldCheck size={24} style={{ color: "var(--lewa-terracotta)", flexShrink: 0 }} />
+                  <h3 style={{ fontFamily: "var(--font-serif)", fontSize: "22px", margin: 0 }}>
+                    Review Queue Empty
+                  </h3>
+                </div>
+                <p style={{ color: "var(--lewa-muted)", fontSize: "14px", margin: 0 }}>
                   All ambiguous Re-ID matches have been reviewed by forest department rangers.
                 </p>
               </div>
