@@ -860,14 +860,6 @@ export default function HomePage() {
         </button>
       )}
 
-      {/* Bottom Left Social Icons */}
-      <div className="lewa-socials">
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>FB</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>IG</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>X</span>
-        <span style={{ cursor: "pointer", fontWeight: 700 }}>YT</span>
-      </div>
-
       {/* Bottom Right Audio Toggle */}
       <button
         onClick={toggleSound}
