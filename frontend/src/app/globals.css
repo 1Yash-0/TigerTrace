@@ -28,6 +28,14 @@
   --lewa-border: rgba(21, 17, 13, 0.12);
   --lewa-border-subtle: rgba(21, 17, 13, 0.06);
 
+  /* Operational severity states — tint surface + AA-safe ink (4.5:1+) */
+  --lewa-sev-high-bg: rgba(200, 82, 32, 0.10);
+  --lewa-sev-high-ink: #AA3D12;
+  --lewa-sev-medium-bg: rgba(226, 136, 22, 0.12);
+  --lewa-sev-medium-ink: #96590B;
+  --lewa-sev-low-bg: rgba(26, 59, 43, 0.10);
+  --lewa-sev-low-ink: #1A3B2B;
+
   /* Fonts */
   --font-serif: 'Playfair Display', 'Georgia', serif;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;

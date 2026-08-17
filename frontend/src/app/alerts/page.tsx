@@ -201,69 +201,115 @@ export default function AlertsPage() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {filtered.map((alert) => (
-              <div
-                key={alert.id}
-                style={{
-                  background: "#fff",
-                  borderRadius: "10px",
-                  padding: "24px",
-                  boxShadow: "0 4px 20px rgba(28,23,18,0.05)",
-                  borderLeft: `4px solid ${
-                    alert.severity === "high"
-                      ? "var(--lewa-terracotta)"
-                      : "var(--lewa-amber)"
-                  }`,
-                  opacity: alert.resolved ? 0.5 : 1,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: "20px",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-                    <span
-                      style={{
-                        padding: "3px 10px",
-                        borderRadius: "20px",
-                        background: "rgba(184, 71, 40, 0.1)",
-                        color: "var(--lewa-terracotta)",
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "1px",
-                      }}
+            {filtered.map((alert) => {
+              const severity =
+                alert.severity === "high" || alert.severity === "low"
+                  ? alert.severity
+                  : "medium";
+
+              return (
+                <div
+                  key={alert.id}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "10px",
+                    padding: "24px",
+                    border: "1px solid var(--lewa-border)",
+                    boxShadow: "0 1px 4px rgba(28,23,18,0.04)",
+                    opacity: alert.resolved ? 0.55 : 1,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "20px",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px", flexWrap: "wrap" }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          background: `var(--lewa-sev-${severity}-bg)`,
+                          color: `var(--lewa-sev-${severity}-ink)`,
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            background: "currentColor",
+                          }}
+                        />
+                        {severity}
+                      </span>
+
+                      <span
+                        style={{
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          border: "1px solid var(--lewa-border)",
+                          color: "var(--lewa-muted)",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "1px",
+                        }}
+                      >
+                        {alertTypeLabels[alert.alert_type] || alert.alert_type}
+                      </span>
+
+                      <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "13px", color: "var(--lewa-charcoal)" }}>
+                        {alert.tiger_id}
+                      </span>
+
+                      {alert.resolved && (
+                        <span
+                          style={{
+                            padding: "3px 10px",
+                            borderRadius: "20px",
+                            border: "1px solid var(--lewa-border)",
+                            color: "var(--lewa-light)",
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            textTransform: "uppercase",
+                            letterSpacing: "1px",
+                          }}
+                        >
+                          Resolved
+                        </span>
+                      )}
+                    </div>
+
+                    <p style={{ color: "var(--lewa-body)", fontSize: "14px", lineHeight: "1.6", marginBottom: "12px" }}>
+                      {alert.message}
+                    </p>
+
+                    <div style={{ fontSize: "12px", color: "var(--lewa-muted)", fontVariantNumeric: "tabular-nums" }}>
+                      Confidence: <strong>{(alert.confidence * 100).toFixed(0)}%</strong> ·{" "}
+                      {new Date(alert.created_at).toLocaleString()}
+                    </div>
+                  </div>
+
+                  {!alert.resolved && (
+                    <button
+                      className="btn-pill-light"
+                      style={{ padding: "6px 16px", fontSize: "10px" }}
+                      onClick={() => handleResolve(alert.id)}
                     >
-                      {alertTypeLabels[alert.alert_type] || alert.alert_type}
-                    </span>
-
-                    <span style={{ fontFamily: "monospace", fontWeight: 700, fontSize: "13px", color: "var(--lewa-charcoal)" }}>
-                      {alert.tiger_id}
-                    </span>
-                  </div>
-
-                  <p style={{ color: "var(--lewa-body)", fontSize: "14px", lineHeight: "1.6", marginBottom: "12px" }}>
-                    {alert.message}
-                  </p>
-
-                  <div style={{ fontSize: "12px", color: "var(--lewa-muted)" }}>
-                    Confidence: <strong>{(alert.confidence * 100).toFixed(0)}%</strong> ·{" "}
-                    {new Date(alert.created_at).toLocaleString()}
-                  </div>
+                      <CheckCircle2 size={12} /> Resolve
+                    </button>
+                  )}
                 </div>
-
-                {!alert.resolved && (
-                  <button
-                    className="btn-pill-light"
-                    style={{ padding: "6px 16px", fontSize: "10px" }}
-                    onClick={() => handleResolve(alert.id)}
-                  >
-                    <CheckCircle2 size={12} /> Resolve
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
