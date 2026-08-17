@@ -107,35 +107,73 @@ def triage_history(db: Session = Depends(get_db)):
 @app.post("/api/identify")
 async def identify_image(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """Upload a cropped tiger flank image for identification."""
-    contents = await file.read()
-    temp_path = f"data/images/temp_{file.filename}"
-    with open(temp_path, "wb") as f:
-        f.write(contents)
-    
-    result = identify_tiger(temp_path, db)
-    
-    # Increment total_captures for identified tiger
-    if result.get("status") == "auto_matched":
-        top_id = result.get("top_match", {}).get("tiger_id")
-        conf = result.get("top_match", {}).get("confidence", 0.95)
-        tiger = db.query(Tiger).filter(Tiger.tiger_id == top_id).first()
-        if tiger:
-            new_cap = Capture(
-                tiger_id=top_id,
-                image_path=temp_path,
-                station_id="ST-ONLINE",
-                latitude=21.78,
-                longitude=79.44,
-                timestamp=datetime.utcnow(),
-                confidence=conf,
-                zone="core",
-                flank_side="Unknown"
-            )
-            db.add(new_cap)
-            tiger.total_captures = db.query(Capture).filter(Capture.tiger_id == top_id).count() + 1
-            db.commit()
+    from uuid import uuid4
 
-    return result
+    from fastapi.concurrency import run_in_threadpool
+
+    MAX_UPLOAD_MB = 20
+    try:
+        contents = await file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="Empty file")
+        if len(contents) > MAX_UPLOAD_MB * 1024 * 1024:
+            raise HTTPException(status_code=413, detail=f"Image larger than {MAX_UPLOAD_MB}MB")
+
+        # Reject non-images before they reach the pipeline
+        try:
+            from PIL import Image
+            import io as _io
+            probe = Image.open(_io.BytesIO(contents))
+            probe.verify()
+        except Exception:
+            raise HTTPException(status_code=400, detail="File is not a valid image")
+
+        # Safe filename: never trust client-provided names (path traversal, collisions)
+        suffix = Path(file.filename or "upload.jpg").suffix.lower()
+        if suffix not in {".jpg", ".jpeg", ".png", ".webp", ".bmp"}:
+            suffix = ".jpg"
+        os.makedirs("data/images/uploads", exist_ok=True)
+        temp_path = f"data/images/uploads/{uuid4().hex}{suffix}"
+        with open(temp_path, "wb") as f:
+            f.write(contents)
+
+        # Blocking ONNX inference runs in the threadpool so the event loop
+        # (and every other endpoint) stays responsive during uploads.
+        result = await run_in_threadpool(identify_tiger, temp_path, db)
+
+        # Increment total_captures for identified tiger
+        if result.get("status") == "auto_matched":
+            top_id = result.get("top_match", {}).get("tiger_id")
+            conf = result.get("top_match", {}).get("confidence", 0.95)
+            tiger = db.query(Tiger).filter(Tiger.tiger_id == top_id).first()
+            if tiger:
+                new_cap = Capture(
+                    tiger_id=top_id,
+                    image_path=temp_path,
+                    station_id="ST-ONLINE",
+                    latitude=21.78,
+                    longitude=79.44,
+                    timestamp=datetime.utcnow(),
+                    confidence=conf,
+                    zone="core",
+                    flank_side="Unknown"
+                )
+                db.add(new_cap)
+                tiger.total_captures = db.query(Capture).filter(Capture.tiger_id == top_id).count() + 1
+                db.commit()
+        elif result.get("status") == "not_a_tiger":
+            # Nothing references the file — remove it
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] /api/identify failed: {e}")
+        raise HTTPException(status_code=500, detail="Identification failed. Please retry.")
 
 @app.get("/api/tigers")
 def list_tigers(db: Session = Depends(get_db)):
@@ -245,15 +283,9 @@ def resolve_review(item_id: int, action: str, tiger_id: str = None, db: Session 
         db.add(new_cap)
 
         try:
-            from services.identification_service import _gallery
-            import numpy as np
-            if _gallery is not None and emb_256d:
-                vec = np.array(emb_256d, dtype=np.float32)
-                norm = np.linalg.norm(vec)
-                if norm > 1e-8:
-                    vec = vec / norm
-                _gallery.enroll(new_id, vec)
-                _gallery.save()
+            from services.identification_service import enroll_tiger_embedding
+            if emb_256d:
+                enroll_tiger_embedding(new_id, emb_256d)
         except Exception as g_err:
             print(f"[WARN] Unable to update gallery: {g_err}")
 
