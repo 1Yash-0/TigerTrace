@@ -118,18 +118,3 @@ npm run dev
 *Frontend will be live at `http://localhost:3000`.*
 
 ---
-
-## 🌐 Deployment Guide
-
-### Deploying Frontend to Vercel
-1. Import repository on [Vercel](https://vercel.com).
-2. Set **Root Directory** to `frontend`.
-3. Add Environment Variable:
-   - `NEXT_PUBLIC_API_URL` = `https://your-backend-service.onrender.com`
-4. Click **Deploy**.
-
-### Deploying Backend to Render / Cloud
-1. Create a **Web Service** on [Render](https://render.com).
-2. Set **Root Directory** to `backend`.
-3. Build Command: `pip install -r requirements.txt`
-4. Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
