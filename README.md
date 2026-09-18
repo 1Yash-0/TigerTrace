@@ -105,6 +105,28 @@ python -m uvicorn main:app --reload --port 8000
 ```
 *API docs available at `http://localhost:8000/docs`.*
 
+### 3. Deploying the Backend (Render)
+
+A [render.yaml](render.yaml) Blueprint ships with the repo. The service needs:
+
+- **`plan: standard` (2 GB RAM)** — the 355 MB Re-ID model plus the 101 MB
+  detector need ~1 GB resident; free/starter instances (512 MB) get OOM-killed
+  during inference.
+- **A persistent disk** — the SQLite gallery and uploaded captures live there
+  (`DATABASE_PATH` / `IMAGE_DIR` point at the mount). A fresh disk
+  self-seeds from `backend/seed/pench_ai_seed.db` (the registered 62-tiger
+  gallery) on first boot.
+- **Model weights at build time** — weights are not in git (too large for
+  GitHub). `backend/build.sh` downloads and md5-verifies all three ONNX files:
+  MDV6 from the public Zenodo record, the trained Re-ID + classifier weights
+  from the GitHub release tagged `models-v1` (override with `MODEL_BASE_URL`;
+  set `MODEL_TOKEN` only if you host them privately).
+
+Check `https://<your-service>.onrender.com/api/health` after deploying: it
+reports whether the database and each of the three weights are actually
+present, without loading them. If any model is `false`, every inference
+endpoint will return 503 by design.
+
 The live backend uses the real PTR 2025 dataset under
 `data/PTR_Tiger_IDs_2025/` and the canonical SQLite database
 `backend/data/pench_ai.db`, regardless of the directory from which uvicorn is

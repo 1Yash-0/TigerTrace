@@ -44,7 +44,39 @@ def root_status():
 def health_check():
     return {"status": "healthy"}
 
-IMAGE_DIR = BACKEND_DIR / "data" / "images"
+
+@app.get("/api/health")
+def api_health():
+    """
+    Deployment health probe: reports which ONNX weights are present on the
+    instance WITHOUT loading them. A backend whose models are missing will
+    boot but every inference endpoint will return 503 — this endpoint makes
+    that state visible to orchestration (and to you) immediately.
+    """
+    from database import DATABASE_PATH
+    from services.onnx_models import REID_ONNX, CLASSIFIER_ONNX
+
+    def _exists(p) -> bool:
+        try:
+            return bool(p) and os.path.exists(str(p))
+        except Exception:
+            return False
+
+    mdv6_candidates = [
+        BACKEND_DIR / "TigerTrace" / "models" / "pretrained" / "MDV6-yolov9-c.onnx",
+        BACKEND_DIR.parent / "models" / "pretrained" / "MDV6-yolov9-c.onnx",
+    ]
+    return {
+        "status": "ok",
+        "database_present": _exists(DATABASE_PATH),
+        "models_present": {
+            "reid_side_aware": _exists(REID_ONNX),
+            "species_classifier": _exists(CLASSIFIER_ONNX),
+            "mdv6_detector": any(_exists(p) for p in mdv6_candidates),
+        },
+    }
+
+IMAGE_DIR = Path(os.environ.get("IMAGE_DIR", str(BACKEND_DIR / "data" / "images")))
 os.makedirs(IMAGE_DIR, exist_ok=True)
 os.makedirs(BACKEND_DIR / "data" / "quarantined_blanks", exist_ok=True)
 app.mount("/images", StaticFiles(directory=str(IMAGE_DIR)), name="images")

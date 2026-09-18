@@ -1,0 +1,39 @@
+# Render Blueprint for the TigerTrace backend.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> point at this repo, or use
+# these values when configuring the service manually.
+#
+# IMPORTANT sizing notes:
+#   - plan: standard (2 GB RAM). The 355 MB Re-ID model + 101 MB detector +
+#     the FastAPI stack need roughly 1 GB resident; Render free/starter
+#     instances have 512 MB and will be OOM-killed during inference.
+#   - disk: the SQLite gallery and uploaded captures live on a persistent
+#     disk, otherwise every deploy wipes the registered-tiger database.
+#   - the trained weights are NOT in git (too large for GitHub); build.sh
+#     downloads them at build time from the models-v1 GitHub release
+#     (override with MODEL_BASE_URL / MODEL_TOKEN for private hosting).
+
+services:
+  - type: web
+    name: tigertrace-backend
+    runtime: python
+    rootDir: backend
+    plan: standard
+    buildCommand: bash build.sh
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /api/health
+    disk:
+      name: tigertrace-data
+      mountDir: /var/data/tigertrace
+      sizeGB: 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DATABASE_PATH
+        value: /var/data/tigertrace/pench_ai.db
+      - key: IMAGE_DIR
+        value: /var/data/tigertrace/images
+      - key: MODEL_BASE_URL
+        value: https://github.com/1Yash-0/TigerTrace/releases/download/models-v1
+      - key: MODEL_TOKEN
+        sync: false

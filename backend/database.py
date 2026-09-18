@@ -12,7 +12,20 @@ import os
 # from the repository root instead of from ``backend/``.
 BACKEND_DIR = Path(__file__).resolve().parent
 DATA_DIR = BACKEND_DIR / "data"
-DATABASE_PATH = DATA_DIR / "pench_ai.db"
+# Persistent deployments (Render disk, etc.) relocate the SQLite file via env
+# var; local dev defaults to backend/data/pench_ai.db.
+DATABASE_PATH = Path(os.environ.get("DATABASE_PATH", str(DATA_DIR / "pench_ai.db")))
+# Self-seeding deploys: a fresh persistent disk would otherwise boot with an
+# empty gallery. The repo ships a compact seed copy of the real 62-tiger
+# gallery (backend/seed/pench_ai_seed.db); it is copied on first boot only.
+if not DATABASE_PATH.exists():
+    _SEED_DB = BACKEND_DIR / "seed" / "pench_ai_seed.db"
+    if _SEED_DB.exists():
+        import shutil
+
+        DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(_SEED_DB, DATABASE_PATH)
+        print(f"[DB] Seeded fresh database from {_SEED_DB.name} -> {DATABASE_PATH}")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DATABASE_URL = f"sqlite:///{DATABASE_PATH.as_posix()}"
 
