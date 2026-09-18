@@ -11,6 +11,14 @@ pip install --no-cache-dir -r requirements.txt
 
 md5_ok() { [ "$(md5sum "$1" | cut -d' ' -f1)" = "$2" ]; }
 
+download_failed() {
+    echo "[build] FATAL: download failed (HTTP error) for: $1" >&2
+    echo "[build]        Check that MODEL_BASE_URL points at the weights repo and" >&2
+    echo "[build]        MODEL_TOKEN is a valid read token, and that the file exists" >&2
+    echo "[build]        in the repo under this exact name." >&2
+    exit 1
+}
+
 fetch() {
     # fetch <dest> <md5> <url>
     local dest="$1" md5="$2" url="$3"
@@ -28,13 +36,16 @@ fetch() {
         redirect=$(curl -sS -o /dev/null -w '%{redirect_url}' \
             -H "Authorization: Bearer ${MODEL_TOKEN}" "$url" || true)
         if [ -n "$redirect" ]; then
-            curl -L --fail --retry 3 --silent --show-error -o "$dest" "$redirect"
+            curl -L --fail --retry 3 --silent --show-error -o "$dest" "$redirect" \
+                || download_failed "$url"
         else
             curl -L --fail --retry 3 --silent --show-error \
-                -H "Authorization: Bearer ${MODEL_TOKEN}" -o "$dest" "$url"
+                -H "Authorization: Bearer ${MODEL_TOKEN}" -o "$dest" "$url" \
+                || download_failed "$url"
         fi
     else
-        curl -L --fail --retry 3 --silent --show-error -o "$dest" "$url"
+        curl -L --fail --retry 3 --silent --show-error -o "$dest" "$url" \
+            || { echo "[build]        NOTE: no MODEL_TOKEN set — private repos need one." >&2; download_failed "$url"; }
     fi
     if md5_ok "$dest" "$md5"; then
         echo "[build] $(basename "$dest"): downloaded and verified"
