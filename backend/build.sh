@@ -50,9 +50,15 @@ fetch() {
 }
 
 # 1. MDV6-yolov9-c detector — public weights, hosted by Microsoft on Zenodo.
-fetch "TigerTrace/models/pretrained/MDV6-yolov9-c.onnx" \
-    "3db7988385714066c1515dde6ab56e4c" \
-    "https://zenodo.org/api/records/15398270/files/MDV6-yolov9-c.onnx/content"
+# Skipped when the deployment explicitly runs without the detector
+# (TIGERTRACE_NO_DETECTOR=1 on 512 MB hosts).
+if [ "${TIGERTRACE_NO_DETECTOR:-0}" = "1" ]; then
+    echo "[build] TIGERTRACE_NO_DETECTOR=1 — skipping MDV6 download"
+else
+    fetch "TigerTrace/models/pretrained/MDV6-yolov9-c.onnx" \
+        "3db7988385714066c1515dde6ab56e4c" \
+        "https://zenodo.org/api/records/15398270/files/MDV6-yolov9-c.onnx/content"
+fi
 
 # 2+3. Trained TigerTrace weights (Re-ID Swin + species classifier).
 # Hosted on a private Hugging Face repo (or GitHub release). Override

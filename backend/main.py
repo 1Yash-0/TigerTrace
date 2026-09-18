@@ -66,13 +66,15 @@ def api_health():
         BACKEND_DIR / "TigerTrace" / "models" / "pretrained" / "MDV6-yolov9-c.onnx",
         BACKEND_DIR.parent / "models" / "pretrained" / "MDV6-yolov9-c.onnx",
     ]
+    detector_disabled = os.environ.get("TIGERTRACE_NO_DETECTOR", "") in ("1", "true", "True")
     return {
         "status": "ok",
         "database_present": _exists(DATABASE_PATH),
+        "detector_disabled_by_config": detector_disabled,
         "models_present": {
             "reid_side_aware": _exists(REID_ONNX),
             "species_classifier": _exists(CLASSIFIER_ONNX),
-            "mdv6_detector": any(_exists(p) for p in mdv6_candidates),
+            "mdv6_detector": (not detector_disabled) and any(_exists(p) for p in mdv6_candidates),
         },
     }
 
