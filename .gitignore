@@ -71,6 +71,7 @@ skill-observations/
 # ─────────────────────────────────────────────────────────
 outputs/
 runs/
+tools/
 *.log
 *.tmp
 *.bak
