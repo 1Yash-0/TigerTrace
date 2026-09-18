@@ -44,6 +44,7 @@ backend/data/images/test.jpg
 backend/data/images/retained_images/
 pench_camera_logs_ready.csv
 *.mp4
+!frontend/public/hero.mp4
 
 # ─────────────────────────────────────────────────────────
 # Model weights — far too large for git (fetch via
