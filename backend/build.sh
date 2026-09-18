@@ -6,6 +6,28 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# ── Configuration check — fail fast, before any downloads ──────────────────
+# These come from Render → Environment. If they are missing this build can
+# only fail later with a confusing 404, so stop here with instructions.
+: "${REID_ONNX_FILENAME:=tigertrace_ptr_v2_side_aware.onnx}"
+if [ -z "${MODEL_BASE_URL:-}" ]; then
+    echo "[build] FATAL: MODEL_BASE_URL is not set." >&2
+    echo "[build]        Add it in Render → Environment, e.g.:" >&2
+    echo "[build]          MODEL_BASE_URL = https://huggingface.co/<user>/<repo>/resolve/main" >&2
+    echo "[build]        Also set MODEL_TOKEN (HF read token) and REID_ONNX_FILENAME." >&2
+    exit 1
+fi
+if [ -z "${MODEL_TOKEN:-}" ]; then
+    echo "[build] WARNING: MODEL_TOKEN is not set — private weight repos need it to download." >&2
+fi
+echo "[build] Config: REID_ONNX_FILENAME=$REID_ONNX_FILENAME"
+echo "[build] Config: MODEL_BASE_URL=$MODEL_BASE_URL"
+echo "[build] Config: TIGERTRACE_NO_DETECTOR=${TIGERTRACE_NO_DETECTOR:-0}"
+if [ "$REID_ONNX_FILENAME" = "tigertrace_ptr_v2_side_aware.onnx" ]; then
+    echo "[build] NOTE: using the FULL model (~1 GB RAM at runtime). On 512 MB hosts"
+    echo "[build]       set REID_ONNX_FILENAME=tigertrace_ptr_v2_side_aware_int8.onnx."
+fi
+
 echo "[build] Installing Python dependencies..."
 pip install --no-cache-dir -r requirements.txt
 
@@ -76,7 +98,7 @@ fi
 # MODEL_BASE_URL and, for private hosting, set MODEL_TOKEN / HF_TOKEN.
 # On 512 MB hosts set REID_ONNX_FILENAME=tigertrace_ptr_v2_side_aware_int8.onnx
 # and upload that file to the weights repo instead of the 355 MB original.
-MODEL_BASE_URL="${MODEL_BASE_URL:-https://github.com/1Yash-0/TigerTrace/releases/download/models-v1}"
+# MODEL_BASE_URL was validated above — no silent fallback to a dead URL.
 REID_FILENAME="${REID_ONNX_FILENAME:-tigertrace_ptr_v2_side_aware.onnx}"
 case "$REID_FILENAME" in
     *_int8.onnx) REID_MD5="8c972069fb62b4ad39f92bb147f8f137" ;;
