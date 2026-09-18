@@ -13,6 +13,16 @@
 #     downloads them at build time from the models-v1 GitHub release
 #     (override with MODEL_BASE_URL / MODEL_TOKEN for private hosting).
 
+# ── Free-tier (512 MB) variant ────────────────────────────────────────────
+# Render free/starter cannot fit the full model (355 MB / 442 MB resident).
+# If you must run free, add these env vars — measured on real data:
+#   REID_ONNX_FILENAME: tigertrace_ptr_v2_side_aware_int8.onnx  (94.7 MB file,
+#     ~170 MB resident, equal accuracy, 1.7x faster — upload that file to the
+#     private weights repo and set build.sh's REID_ONNX_FILENAME accordingly)
+#   TIGERTRACE_NO_DETECTOR: 1  (skip MDV6, ~130 MB resident; single-view identify)
+# Even then expect ~10-20 s per identification on 0.1 CPU, with little memory
+# headroom if you keep the detector enabled. Prefer the paid plan for real use.
+
 services:
   - type: web
     name: tigertrace-backend

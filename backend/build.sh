@@ -55,13 +55,20 @@ fetch "TigerTrace/models/pretrained/MDV6-yolov9-c.onnx" \
     "https://zenodo.org/api/records/15398270/files/MDV6-yolov9-c.onnx/content"
 
 # 2+3. Trained TigerTrace weights (Re-ID Swin + species classifier).
-# Hosted as GitHub Release assets (tag models-v1). Override MODEL_BASE_URL and,
-# for private hosting, set MODEL_TOKEN to a bearer token with read access.
+# Hosted on a private Hugging Face repo (or GitHub release). Override
+# MODEL_BASE_URL and, for private hosting, set MODEL_TOKEN / HF_TOKEN.
+# On 512 MB hosts set REID_ONNX_FILENAME=tigertrace_ptr_v2_side_aware_int8.onnx
+# and upload that file to the weights repo instead of the 355 MB original.
 MODEL_BASE_URL="${MODEL_BASE_URL:-https://github.com/1Yash-0/TigerTrace/releases/download/models-v1}"
+REID_FILENAME="${REID_ONNX_FILENAME:-tigertrace_ptr_v2_side_aware.onnx}"
+case "$REID_FILENAME" in
+    *_int8.onnx) REID_MD5="8c972069fb62b4ad39f92bb147f8f137" ;;
+    *)           REID_MD5="c616592eb5271062b8214578f714eb42" ;;
+esac
 
-fetch "../models/tigertrace_ptr_v2_side_aware/tigertrace_ptr_v2_side_aware.onnx" \
-    "c616592eb5271062b8214578f714eb42" \
-    "$MODEL_BASE_URL/tigertrace_ptr_v2_side_aware.onnx"
+fetch "../models/tigertrace_ptr_v2_side_aware/$REID_FILENAME" \
+    "$REID_MD5" \
+    "$MODEL_BASE_URL/$REID_FILENAME"
 
 fetch "TigerTrace/models/exported/classifier/tiger_classifier.onnx" \
     "7b2d9d1c55c97e6344c37d65bd4160a9" \

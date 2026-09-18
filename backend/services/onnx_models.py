@@ -21,11 +21,16 @@ CLASSIFIER_ONNX_CANDIDATES = [
 ]
 CLASSIFIER_ONNX = next((p for p in CLASSIFIER_ONNX_CANDIDATES if os.path.exists(p)), CLASSIFIER_ONNX_CANDIDATES[0])
 
+# The Re-ID weights to use can be swapped per deployment via env var, e.g.
+# REID_ONNX_FILENAME=tigertrace_ptr_v2_side_aware_int8.onnx on 512 MB hosts
+# (INT8: 94.7 MB file / ~170 MB resident, measured equal accuracy, 1.7x faster).
+REID_ONNX_FILENAME = os.environ.get("REID_ONNX_FILENAME", "tigertrace_ptr_v2_side_aware.onnx")
+
 REID_ONNX_CANDIDATES = [
-    os.path.join(_WORKSPACE_DIR, "models", "tigertrace_ptr_v2_side_aware", "tigertrace_ptr_v2_side_aware.onnx"),
-    os.path.join(_TIGER_TRACE_DIR, "models", "tigertrace_ptr_v2_side_aware", "tigertrace_ptr_v2_side_aware.onnx"),
-    os.path.join(_WORKSPACE_DIR, "models", "exported", "reid", "tigertrace_ptr_v2_side_aware.onnx"),
-    os.path.join(_TIGER_TRACE_DIR, "models", "exported", "reid", "tigertrace_ptr_v2_side_aware.onnx"),
+    os.path.join(_WORKSPACE_DIR, "models", "tigertrace_ptr_v2_side_aware", REID_ONNX_FILENAME),
+    os.path.join(_TIGER_TRACE_DIR, "models", "tigertrace_ptr_v2_side_aware", REID_ONNX_FILENAME),
+    os.path.join(_WORKSPACE_DIR, "models", "exported", "reid", REID_ONNX_FILENAME),
+    os.path.join(_TIGER_TRACE_DIR, "models", "exported", "reid", REID_ONNX_FILENAME),
     os.path.join(_TIGER_TRACE_DIR, "models", "exported", "reid", "tiger_reid.onnx"),
 ]
 REID_ONNX = next((p for p in REID_ONNX_CANDIDATES if os.path.exists(p)), REID_ONNX_CANDIDATES[0])

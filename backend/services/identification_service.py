@@ -170,6 +170,12 @@ def detect_crop(image_path: str):
     The crop is written next to the uploads so the species gate and Re-ID see the
     same tightened region the detector found.
     """
+    if os.environ.get("TIGERTRACE_NO_DETECTOR", "") in ("1", "true", "True"):
+        # Explicit deployment choice for memory-constrained hosts (set in the
+        # service env, never auto-enabled): identify on the full frame without
+        # the detector instead of loading MDV6 (~130 MB resident).
+        return True, 0.0, image_path
+
     from services.triage_service import detect_animal
 
     has_animal, confidence = detect_animal(image_path)
