@@ -105,29 +105,30 @@ python -m uvicorn main:app --reload --port 8000
 ```
 *API docs available at `http://localhost:8000/docs`.*
 
-### 3. Deploying the Backend — free & private (Hugging Face Space)
+### 3. Deploying the Backend — free (Modal, $30/mo free credits)
 
-The recommended free hosting is a **Docker Space** (free tier: 2 vCPU /
-16 GB RAM — comfortably fits the 355 MB Re-ID model, unlike Render free's
-512 MB which will OOM):
+The backend needs ~1 GB RAM for the ONNX models, so Render/HF free tiers
+(512 MB) OOM. [modal_app.py](modal_app.py) deploys to **Modal** — 2 vCPU /
+2 GB containers on free credits, weights fetched from your **private**
+Hugging Face repo at build time and baked into the image:
 
-1. **Private weights repo** on Hugging Face: New → Model → set **Private** →
-   upload `tigertrace_ptr_v2_side_aware.onnx` and `tiger_classifier.onnx`
-   (from `models/…` on this machine).
-2. **Read token**: Settings → Access Tokens → New (role: *read*).
-3. **The Space**: New → Space → SDK: **Docker** → create it, then upload the
-   two files from [hf-space/](hf-space/) (`README.md` with its frontmatter
-   block + `Dockerfile`).
-4. **Space secrets** (Settings → Variables and secrets):
-   - `HF_TOKEN` = the read token
-   - `MODEL_BASE_URL` = `https://huggingface.co/<your-user>/<weights-repo>/resolve/main`
+1. **Private weights repo** on Hugging Face: New → Model → **Private** →
+   upload `tigertrace_ptr_v2_side_aware.onnx` + `tiger_classifier.onnx`.
+2. **HF read token** (Settings → Access Tokens).
+3. **Modal** account (login via GitHub) → Secrets → create `tigertrace-models`
+   with `MODEL_BASE_URL=https://huggingface.co/<user>/<repo>/resolve/main`
+   and `MODEL_TOKEN=<hf read token>`.
+4. `pip install modal && modal token new && modal deploy modal_app.py`
+   — or push to `main` with a `MODAL_TOKEN` repository secret and let
+   [.github/workflows/deploy-modal.yml](.github/workflows/deploy-modal.yml)
+   deploy automatically.
 
-The Space clones this repo, verifies and fetches all weights at start, seeds
-the gallery database from `backend/seed/pench_ai_seed.db`, and serves on
-`https://<your-user>-<space-name>.hf.space`. Check `/api/health` there — all
-three `models_present` flags must be `true`. Then point the frontend at it:
-Vercel env var `NEXT_PUBLIC_API_URL=https://<your-user>-<space-name>.hf.space`.
-Weights stay **private** (token-gated); only the Space code is public.
+Verify `<modal-url>/api/health` (all `models_present` must be `true`), then
+point Vercel's `NEXT_PUBLIC_API_URL` at it. The gallery self-seeds from
+`backend/seed/pench_ai_seed.db` on every cold start. Note: HF's *Docker
+Spaces* are now PRO-only (see `hf-space/` for files that still work on a PRO
+plan), and Render's *Standard* plan ($25+) is the simplest paid alternative —
+[render.yaml](render.yaml) is ready for it.
 
 ### 4. Deploying the Backend on Render (paid)
 
