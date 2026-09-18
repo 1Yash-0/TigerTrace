@@ -20,13 +20,30 @@ fetch() {
     fi
     mkdir -p "$(dirname "$dest")"
     echo "[build] Downloading $(basename "$dest") ..."
-    local auth=()
-    [ -n "${MODEL_TOKEN:-}" ] && auth=(-H "Authorization: Bearer ${MODEL_TOKEN}")
-    curl -L --fail --retry 3 --silent --show-error "${auth[@]}" -o "$dest" "$url"
+    if [ -n "${MODEL_TOKEN:-}" ]; then
+        # Private weights (Hugging Face etc.): resolve the authenticated URL
+        # first, then download WITHOUT the token header — forwarding it to the
+        # CDN would invalidate HF's pre-signed redirect URL.
+        local redirect
+        redirect=$(curl -sS -o /dev/null -w '%{redirect_url}' \
+            -H "Authorization: Bearer ${MODEL_TOKEN}" "$url" || true)
+        if [ -n "$redirect" ]; then
+            curl -L --fail --retry 3 --silent --show-error -o "$dest" "$redirect"
+        else
+            curl -L --fail --retry 3 --silent --show-error \
+                -H "Authorization: Bearer ${MODEL_TOKEN}" -o "$dest" "$url"
+        fi
+    else
+        curl -L --fail --retry 3 --silent --show-error -o "$dest" "$url"
+    fi
     if md5_ok "$dest" "$md5"; then
         echo "[build] $(basename "$dest"): downloaded and verified"
     else
-        echo "[build] FATAL: $(basename "$dest") md5 mismatch — deleting bad file" >&2
+        echo "[build] FATAL: $(basename "$dest") md5 mismatch or download failed" >&2
+        if [ -n "${MODEL_TOKEN:-}" ]; then
+            echo "[build]        MODEL_TOKEN was set — verify the token is valid and has read access to:" >&2
+            echo "[build]        $url" >&2
+        fi
         rm -f "$dest"
         exit 1
     fi
