@@ -105,7 +105,31 @@ python -m uvicorn main:app --reload --port 8000
 ```
 *API docs available at `http://localhost:8000/docs`.*
 
-### 3. Deploying the Backend (Render)
+### 3. Deploying the Backend — free & private (Hugging Face Space)
+
+The recommended free hosting is a **Docker Space** (free tier: 2 vCPU /
+16 GB RAM — comfortably fits the 355 MB Re-ID model, unlike Render free's
+512 MB which will OOM):
+
+1. **Private weights repo** on Hugging Face: New → Model → set **Private** →
+   upload `tigertrace_ptr_v2_side_aware.onnx` and `tiger_classifier.onnx`
+   (from `models/…` on this machine).
+2. **Read token**: Settings → Access Tokens → New (role: *read*).
+3. **The Space**: New → Space → SDK: **Docker** → create it, then upload the
+   two files from [hf-space/](hf-space/) (`README.md` with its frontmatter
+   block + `Dockerfile`).
+4. **Space secrets** (Settings → Variables and secrets):
+   - `HF_TOKEN` = the read token
+   - `MODEL_BASE_URL` = `https://huggingface.co/<your-user>/<weights-repo>/resolve/main`
+
+The Space clones this repo, verifies and fetches all weights at start, seeds
+the gallery database from `backend/seed/pench_ai_seed.db`, and serves on
+`https://<your-user>-<space-name>.hf.space`. Check `/api/health` there — all
+three `models_present` flags must be `true`. Then point the frontend at it:
+Vercel env var `NEXT_PUBLIC_API_URL=https://<your-user>-<space-name>.hf.space`.
+Weights stay **private** (token-gated); only the Space code is public.
+
+### 4. Deploying the Backend on Render (paid)
 
 A [render.yaml](render.yaml) Blueprint ships with the repo. The service needs:
 
