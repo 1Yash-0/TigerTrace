@@ -126,9 +126,22 @@ Hugging Face repo at build time and baked into the image:
 Verify `<modal-url>/api/health` (all `models_present` must be `true`), then
 point Vercel's `NEXT_PUBLIC_API_URL` at it. The gallery self-seeds from
 `backend/seed/pench_ai_seed.db` on every cold start. Note: HF's *Docker
-Spaces* are now PRO-only (see `hf-space/` for files that still work on a PRO
-plan), and Render's *Standard* plan ($25+) is the simplest paid alternative —
-[render.yaml](render.yaml) is ready for it.
+Spaces* are now PRO-only, so the Space route is not available on the free
+tier. With default settings the container sleeps after 10 idle minutes — the
+first click after that takes ~30 s to wake (weights are baked into the image,
+so there is no re-download); left as-is, the free credits last a very long
+time at demo-level traffic.
+
+**Free fallback — Render free + INT8:** if you prefer Render's free tier
+(512 MB), use the quantized model — env vars
+`REID_ONNX_FILENAME=tigertrace_ptr_v2_side_aware_int8.onnx` (94.7 MB file,
+~170 MB resident, measured equal accuracy), `TIGERTRACE_NO_DETECTOR=1`
+(skips the ~130 MB detector; a 60% center-crop second view recovers most of
+its accuracy — measured 64.9% vs 69.4% top-1), plus `MODEL_BASE_URL` and
+`MODEL_TOKEN` as above. Measured locally: ~347 MB resident (165 MB headroom),
+but ~10-20 s per identification on Render's 0.1 CPU. Upload
+`tigertrace_ptr_v2_side_aware_int8.onnx` to the private weights repo alongside
+the full model.
 
 ### 4. Deploying the Backend on Render (paid)
 

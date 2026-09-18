@@ -172,9 +172,23 @@ def detect_crop(image_path: str):
     """
     if os.environ.get("TIGERTRACE_NO_DETECTOR", "") in ("1", "true", "True"):
         # Explicit deployment choice for memory-constrained hosts (set in the
-        # service env, never auto-enabled): identify on the full frame without
-        # the detector instead of loading MDV6 (~130 MB resident).
-        return True, 0.0, image_path
+        # service env, never auto-enabled): run without MDV6 (~130 MB resident).
+        # The second query view is a 60% center crop instead of a detector
+        # crop — measured on 134 held-out captures: 64.9% top-1 vs 61.9%
+        # single-view (MDV6-crop dual = 69.4%).
+        import cv2
+
+        img = cv2.imread(str(image_path))
+        if img is None:
+            return False, 0.0, None
+        h, w = img.shape[:2]
+        cw, ch = int(w * 0.6), int(h * 0.6)
+        x0, y0 = (w - cw) // 2, (h - ch) // 2
+        crop = img[y0:y0 + ch, x0:x0 + cw]
+        root, ext = os.path.splitext(str(image_path))
+        cropped_path = f"{root}_crop{ext or '.jpg'}"
+        cv2.imwrite(cropped_path, crop)
+        return True, 0.0, cropped_path
 
     from services.triage_service import detect_animal
 
