@@ -91,6 +91,22 @@ def preprocess_image(image_input: Union[str, Any], width: int = 224, height: int
         return None
 
 
+def warmup_sessions():
+    """
+    Create both ONNX sessions and run one dummy inference each, so the first
+    real request does not pay session creation + graph optimization (which on
+    a 0.1-CPU instance adds tens of seconds to the first click after boot).
+    Raises if weights are missing — callers decide how to surface that.
+    """
+    sess = _get_session(CLASSIFIER_ONNX)
+    dummy = np.zeros((1, 3, 224, 224), dtype=np.float32)
+    sess.run(None, {sess.get_inputs()[0].name: dummy})
+
+    sess = _get_session(REID_ONNX)
+    sess.run(None, {sess.get_inputs()[0].name: dummy})
+    return True
+
+
 def classifier_probs(image_path: str):
     """Species gate: softmax over [tiger, non_tiger]; None only when the
     specific image cannot be processed (a missing model raises instead)."""

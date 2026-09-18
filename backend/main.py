@@ -23,6 +23,36 @@ seed_database()
 
 app = FastAPI(title="TigerTrace — Camera Trap Intelligence API")
 
+
+@app.on_event("startup")
+def warm_models_background():
+    """
+    Load the ONNX sessions in a background thread at boot. Without this, the
+    FIRST identify request pays session creation + graph optimization (tens of
+    seconds on a 0.1-CPU instance) — which looks exactly like the backend
+    hanging. The port binds immediately; models stream in behind it.
+    """
+    import threading
+
+    def _warm():
+        from services.onnx_models import warmup_sessions
+        try:
+            warmup_sessions()
+            print("[startup] ONNX sessions warmed (species classifier + Re-ID).")
+        except Exception as e:
+            print(f"[startup] WARNING: model warm-up failed: {e} — "
+                  f"the first request will be slower, and inference may 503.")
+        if os.environ.get("TIGERTRACE_NO_DETECTOR", "") not in ("1", "true", "True"):
+            try:
+                from services.triage_service import get_mdv6
+                get_mdv6()
+                print("[startup] MDV6 detector warmed.")
+            except Exception as e:
+                print(f"[startup] WARNING: MDV6 warm-up failed: {e}")
+
+    threading.Thread(target=_warm, name="model-warmup", daemon=True).start()
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
