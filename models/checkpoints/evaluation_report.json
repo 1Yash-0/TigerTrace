@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-08-16T02:20:59.977427",
+  "device": "cuda",
+  "classifier": {
+    "total_test_samples": 675,
+    "tiger_samples": 300,
+    "non_tiger_samples": 375,
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "tiger_precision": 1.0,
+    "tiger_recall": 1.0,
+    "tiger_f1": 1.0,
+    "not_tiger_precision": 1.0,
+    "not_tiger_recall": 1.0,
+    "not_tiger_f1": 1.0,
+    "confusion_matrix": [
+      [
+        300,
+        0
+      ],
+      [
+        0,
+        375
+      ]
+    ]
+  },
+  "reid": {
+    "num_identities": 107,
+    "gallery_size": 923,
+    "query_size": 964,
+    "rank_1": 0.9917,
+    "rank_5": 0.9959,
+    "rank_10": 0.9979,
+    "mAP": 0.9913,
+    "eval_protocol": "Disjoint Query/Gallery Split (No self-matching)"
+  }
+}

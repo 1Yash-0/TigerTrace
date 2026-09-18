@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TigerTrace</string>
+    <string name="title_activity_main">TigerTrace</string>
+    <string name="package_name">org.pench.tigertrace</string>
+    <string name="custom_url_scheme">org.pench.tigertrace</string>
+</resources>
